@@ -2,7 +2,26 @@
 
 An optional 10-minute AI "level-up" challenge shown at the end of a Passport to Earning (P2E) course. Built for UNICEF / Generation Unlimited by the Berkeley Business Society team.
 
-**Status: Phase 0** — scaffold, synthetic seed data and a mock AI provider. The learner journey (`/demo/p2e`, `/embed/skilllens`) comes in Phase 1.
+**Status: Phase 1**: the full learner journey works end to end in mock mode. Real Foundry models come in Phase 2.
+
+## Run the demo
+
+`npm run dev`, then open http://localhost:3000/demo/p2e (use your browser's phone view). This mock P2E "course complete" page opens SkillLens in an iframe:
+
+1. Choose a language (English or Pidgin)
+2. Read the scenario
+3. Answer by typing, speaking (Chrome's Web Speech API) or taking a photo of handwritten work. Every mode fills the same editable text box.
+4. Feedback: "Did well" and "To improve". The learner never sees a score.
+5. Level 2: revise with the tip shown, then get feedback again
+6. Save: the Level 2 answer is stored as "Practice sample, not a certification" and sent to the host page
+
+P2E embeds `/embed/skilllens?course=<financial-literacy|job-readiness>&lang=<en|pcm>`. When the learner saves, the iframe posts `{ type: "skilllens:saved", sample }` to its parent (same origin only for now).
+
+| API route | Purpose |
+| --- | --- |
+| `POST /api/challenge` | `{course, lang}` → a filled challenge |
+| `POST /api/feedback` | `{templateId, seed, lang, answer}` → strengths + suggestion (scores stay on the server) |
+| `POST /api/transcribe` | form field `photo` → text (photos are compressed on the device, never stored) |
 
 ## Setup
 

@@ -9,6 +9,14 @@
   --radius-*: initial;
 }
 
+/* Large tap targets for cheap phones. Navy on white passes contrast; cyan is accent-only. */
+@utility btn {
+  @apply min-h-12 w-full bg-navy px-4 text-lg font-bold text-white disabled:opacity-50;
+}
+@utility btn-secondary {
+  @apply min-h-12 w-full border-2 border-navy bg-white px-4 text-lg font-bold text-navy;
+}
+
 body {
   background: #ffffff;
   color: var(--color-navy);

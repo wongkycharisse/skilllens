@@ -3,8 +3,7 @@ export default function Home() {
     <main className="mx-auto max-w-md p-4">
       <h1 className="text-2xl font-bold">SkillLens prototype</h1>
       <p className="mt-2">
-        Phase 0: seed data and mock AI provider are in place. The demo at{" "}
-        <code>/demo/p2e</code> arrives in Phase 1.
+        Open the <a className="underline" href="/demo/p2e">mock P2E demo</a> to try the level-up challenge.
       </p>
     </main>
   );
