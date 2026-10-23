@@ -2,7 +2,7 @@
 
 An optional 10-minute AI "level-up" challenge shown at the end of a Passport to Earning (P2E) course. Built for UNICEF / Generation Unlimited by the Berkeley Business Society team.
 
-**Status: Phase 1**: the full learner journey works end to end in mock mode. Real Foundry models come in Phase 2.
+**Status: Phase 2**: the full learner journey works in mock mode, and with real Microsoft Foundry models when configured. Content Safety and personal-detail stripping come in Phase 3.
 
 ## Run the demo
 
@@ -20,7 +20,7 @@ P2E embeds `/embed/skilllens?course=<financial-literacy|job-readiness>&lang=<en|
 | API route | Purpose |
 | --- | --- |
 | `POST /api/challenge` | `{course, lang}` → a filled challenge |
-| `POST /api/feedback` | `{templateId, seed, lang, answer}` → strengths + suggestion (scores stay on the server) |
+| `POST /api/feedback` | `{templateId, lang, values, answer}` → strengths + suggestion (scores stay on the server) |
 | `POST /api/transcribe` | form field `photo` → text (photos are compressed on the device, never stored) |
 
 ## Setup
@@ -44,11 +44,25 @@ npm run dev                  # http://localhost:3000
 
 ## Environment variables
 
-| Variable | Values | Default |
+| Variable | Needed for | Example |
 | --- | --- | --- |
-| `AI_PROVIDER` | `mock` (Foundry is added in Phase 2) | `mock` |
+| `AI_PROVIDER` | always | `mock` (default) or `foundry` |
+| `FOUNDRY_BASE_URL` | foundry | `https://<resource>.openai.azure.com/openai/v1` |
+| `FOUNDRY_API_KEY` | foundry | from the resource's Keys and Endpoint page |
+| `FOUNDRY_CHAT_DEPLOYMENT` | foundry | your deployment name, e.g. `gpt-4.1-mini` |
+| `FOUNDRY_VISION_DEPLOYMENT` | optional | a vision-capable deployment for photos; defaults to the chat deployment |
 
-Never commit real keys. Put them in `.env.local`, which git ignores.
+Never commit real keys. Put them in `.env.local`, which git ignores, then restart `npm run dev`.
+
+## How the AI is used
+
+Prompts live in [`prompts/v1/`](prompts/v1) so educators can review them. Change the wording in a new version folder and bump `PROMPT_VERSION` in `lib/ai/prompts.ts`.
+
+- **Challenge** (`generate.md`): the model only picks short local values for the template's `{slots}` (names, goods, naira prices). The educator-approved wording is filled in by our code, never generated. Values are checked: max 40 characters, no `{ } < >`.
+- **Feedback** (`feedback.md`): the rubric and the 10 educator-scored examples go in the prompt; the learner's answer goes in a separate, delimited message. The JSON reply is validated with Zod and must cover exactly the rubric's criteria; one retry, then an error. Scores stay on the server.
+- **Photo** (`vision.md`): a vision-capable deployment transcribes the handwriting, and the learner checks the text before submitting.
+
+Calls go to the v1 chat completions endpoint with `response_format: json_object`, using plain `fetch` (no SDK). Use a deployment that supports JSON mode (and images, for photos).
 
 ## Layout
 

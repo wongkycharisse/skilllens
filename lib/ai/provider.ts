@@ -1,4 +1,5 @@
 import type { Challenge, Feedback, Lang, Locale, Rubric, Sample, Template } from "../schema";
+import { createFoundryProvider, foundryConfigFromEnv } from "./foundry";
 import { mockProvider } from "./mock";
 
 export interface ScoreInput {
@@ -20,5 +21,6 @@ export interface AIProvider {
 
 export function getProvider(name = process.env.AI_PROVIDER ?? "mock"): AIProvider {
   if (name === "mock") return mockProvider;
-  throw new Error(`AI provider "${name}" is not available yet (Foundry arrives in Phase 2). Use AI_PROVIDER=mock.`);
+  if (name === "foundry") return createFoundryProvider(foundryConfigFromEnv());
+  throw new Error(`Unknown AI_PROVIDER "${name}". Use "mock" or "foundry".`);
 }

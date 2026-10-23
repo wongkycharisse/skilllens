@@ -15,5 +15,6 @@ export async function POST(req: Request) {
   const template = options[Math.floor(Math.random() * options.length)];
   const seed = Math.floor(Math.random() * locale.slots.name.length);
   const challenge = await getProvider().generateChallenge(template, locale, body.data.lang, seed);
-  return Response.json({ templateId: template.id, seed, lang: challenge.lang, text: challenge.text });
+  const { templateId, lang, values, text } = challenge;
+  return Response.json({ templateId, lang, values, text });
 }

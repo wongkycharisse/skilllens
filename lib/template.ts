@@ -7,6 +7,9 @@ export function slotValues(locale: Locale, seed: number): Record<string, string>
   return values;
 }
 
+/** The distinct {slot} names a template uses, in order of first appearance. */
+export const templateSlots = (text: string) => [...new Set([...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]))];
+
 /** Fills {slot} placeholders. Throws on a missing slot so a broken template never reaches a learner. */
 export function fillTemplate(text: string, values: Record<string, string>): string {
   return text.replace(/\{(\w+)\}/g, (_, slot: string) => {

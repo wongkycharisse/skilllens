@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { courses, examplesFor, getRubric, locale, samples, templates, templatesFor } from "./data";
-import { fillTemplate, slotValues } from "./template";
+import { fillTemplate, slotValues, templateSlots } from "./template";
 
 describe("synthetic seed data", () => {
   it("has 2 courses with 4-6 templates each, each using its course's rubric", () => {
@@ -16,6 +16,10 @@ describe("synthetic seed data", () => {
   it("keeps locale slot lists index-aligned (same length)", () => {
     const lengths = new Set(Object.values(locale.slots).map((l) => l.length));
     expect(lengths.size).toBe(1);
+  });
+
+  it("uses the same slots in every language of a template", () => {
+    for (const t of templates) expect(templateSlots(t.text.pcm).sort()).toEqual(templateSlots(t.text.en).sort());
   });
 
   it("fills every template in every language for every seed", () => {

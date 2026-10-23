@@ -15,8 +15,10 @@ describe("API routes", () => {
     expect((await challenge(json({ course: "nope", lang: "en" }))).status).toBe(400);
   });
 
+  const values = { name: "Amina", item: "tomatoes", city: "Kano", price: "₦500", unit: "basket" };
+
   it("returns strengths and a suggestion but never scores", async () => {
-    const res = await feedback(json({ templateId: "fl-rainy-sales", seed: 0, lang: "en", answer: "Buy fewer tomatoes when it rains." }));
+    const res = await feedback(json({ templateId: "fl-rainy-sales", values, lang: "en", answer: "Buy fewer tomatoes when it rains." }));
     const body = await res.json();
     expect(res.status).toBe(200);
     expect(body.strengths.length).toBeGreaterThan(0);
@@ -25,8 +27,10 @@ describe("API routes", () => {
   });
 
   it("rejects empty, oversized or malformed answers", async () => {
-    const base = { templateId: "fl-rainy-sales", seed: 0, lang: "en" };
+    const base = { templateId: "fl-rainy-sales", values, lang: "en" };
     expect((await feedback(json({ ...base, answer: "   " }))).status).toBe(400);
+    expect((await feedback(json({ ...base, values: { ...values, name: "{x}" }, answer: "hi" }))).status).toBe(400);
+    expect((await feedback(json({ ...base, values: { name: "Amina" }, answer: "hi" }))).status).toBe(400);
     expect((await feedback(json({ ...base, answer: "a".repeat(2001) }))).status).toBe(400);
     expect((await feedback(json({ ...base, templateId: "nope", answer: "hi" }))).status).toBe(400);
     expect((await feedback(new Request("http://test", { method: "POST", body: "not json" }))).status).toBe(400);

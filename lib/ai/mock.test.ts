@@ -40,8 +40,8 @@ describe("mock provider", () => {
     expect(texts).toContain(fb.suggestion.text);
   });
 
-  it("rejects providers that do not exist yet", () => {
+  it("rejects unknown providers", () => {
     expect(getProvider("mock")).toBe(mockProvider);
-    expect(() => getProvider("foundry")).toThrow(/Phase 2/);
+    expect(() => getProvider("nope")).toThrow(/Unknown AI_PROVIDER/);
   });
 });

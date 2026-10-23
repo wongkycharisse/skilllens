@@ -50,11 +50,16 @@ export const Sample = z.object({
   split: z.enum(["example", "test"]),
 });
 
+// Values that fill a template's {slots}. They come from the model and travel via the browser, so stay strict.
+export const SlotValue = z.string().trim().min(1).max(40).regex(/^[^{}<>]*$/, "no braces or angle brackets");
+export const SlotValues = z.record(z.string(), SlotValue);
+
 export const Challenge = z.object({
   templateId: z.string(),
   courseId: z.string(),
   rubricId: z.string(),
   lang: Lang,
+  values: SlotValues,
   text: z.string().min(1),
 });
 

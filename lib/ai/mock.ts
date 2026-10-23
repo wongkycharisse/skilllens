@@ -1,6 +1,6 @@
 // Mock AI provider: runs with no API keys. Scores by comparing the answer to the educator-scored examples.
 import { Feedback, type Challenge, type Lang, type Locale, type Template } from "../schema";
-import { fillTemplate, slotValues } from "../template";
+import { fillTemplate, slotValues, templateSlots } from "../template";
 import type { AIProvider, ScoreInput } from "./provider";
 
 const K = 3;
@@ -50,12 +50,15 @@ function feedback(input: ScoreInput, scores: Record<string, number>): Feedback {
 
 export const mockProvider: AIProvider = {
   async generateChallenge(template: Template, locale: Locale, lang: Lang, seed: number): Promise<Challenge> {
+    const all = slotValues(locale, seed);
+    const values = Object.fromEntries(templateSlots(template.text[lang]).map((s) => [s, all[s]]));
     return {
       templateId: template.id,
       courseId: template.courseId,
       rubricId: template.rubricId,
       lang,
-      text: fillTemplate(template.text[lang], slotValues(locale, seed)),
+      values,
+      text: fillTemplate(template.text[lang], values),
     };
   },
 

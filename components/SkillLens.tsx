@@ -8,8 +8,8 @@ import { FeedbackPanels, type LearnerFeedback } from "./FeedbackPanels";
 
 interface Challenge {
   templateId: string;
-  seed: number;
   lang: Lang;
+  values: Record<string, string>;
   text: string;
 }
 
