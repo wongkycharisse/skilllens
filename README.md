@@ -45,7 +45,7 @@ GitHub Actions runs `npm run check` on every push.
 
 ## The demo
 
-`/demo/p2e` is a mock P2E "course complete" page in P2E's own colours. It opens SkillLens in an iframe:
+`/demo/p2e` is a mock P2E "course complete" page in P2E's own look. It opens SkillLens in an iframe:
 
 1. Choose a language (English or Nigerian Pidgin).
 2. Read the scenario.
@@ -185,4 +185,14 @@ Everything in `data/synthetic/` is placeholder content written for the demo, not
 
 ## Design
 
-The colours match the live P2E platform: purple `#49366c`, grey `#f4f4f4`, text `#333333`, and the Segoe UI font stack. Yellow and coral are accents only. Components have straight edges and 48 px tap targets, every input has a label, and white-on-purple text has a contrast ratio of 10.4:1.
+The look matches the Passport to Earning site:
+
+- **Colours:** blue `#0a59a7` and yellow `#ffcb03`, with light-blue tints.
+- **Fonts:** Oswald headings and Jost body text, self-hosted by `next/font`, so the learner's phone never calls Google.
+- **Shapes:** pill-shaped buttons, rounded cards, and round line icons (`components/Icon.tsx`, inline SVG, no icon font).
+- **Tokens:** every colour and font is a token in `app/globals.css`, so a Yoma theme is a one-block change.
+
+Accessibility:
+
+- Tap targets are 48 px and every input has a label.
+- White on blue has a contrast ratio of 7.0:1, blue on yellow 4.6:1, and body text 14.7:1.

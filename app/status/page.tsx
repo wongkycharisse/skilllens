@@ -7,11 +7,11 @@ export default async function Status() {
   const integrations = await integrationStatus();
   return (
     <main className="mx-auto max-w-2xl space-y-4 p-4">
-      <h1 className="text-2xl font-bold">SkillLens integrations</h1>
+      <h1 className="text-3xl text-brand">SkillLens integrations</h1>
       <p>Real = a working API or model call. Simulated = a stand-in for the demo. Checked live when this page loads.</p>
       <ul className="space-y-3">
         {integrations.map((i) => (
-          <li key={i.name} className={`border-l-4 p-3 ${i.mode === "real" ? "border-brand bg-surface" : "border-coral bg-coral/10"}`}>
+          <li key={i.name} className={i.mode === "real" ? "card-brand" : "card-alert"}>
             <p className="font-bold">
               {i.name}: {i.mode === "real" ? "Real" : "Simulated"}
               {i.healthy === false && " (unreachable now)"}

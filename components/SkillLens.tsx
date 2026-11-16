@@ -5,6 +5,7 @@ import { languages, t, type MessageKey } from "../lib/i18n";
 import type { Lang, PracticeSample, YomaSkill } from "../lib/schema";
 import { AnswerInput } from "./AnswerInput";
 import { FeedbackPanels, type LearnerFeedback } from "./FeedbackPanels";
+import { Icon } from "./Icon";
 
 interface Challenge {
   templateId: string;
@@ -113,14 +114,14 @@ function Rating({ lang, onRate }: { lang: Lang; onRate: (n: number) => void }) {
   if (done) return <p role="status">{t(lang, "rateThanks")}</p>;
   return (
     <fieldset className="space-y-2">
-      <legend className="font-bold">{t(lang, "rateQuestion")}</legend>
+      <legend className="font-heading text-lg text-brand">{t(lang, "rateQuestion")}</legend>
       <div className="flex gap-2">
         {[1, 2, 3, 4, 5].map((n) => (
           <button
             key={n}
             type="button"
             aria-label={`${n} / 5`}
-            className="min-h-12 flex-1 border-2 border-brand bg-white text-lg font-bold text-brand"
+            className="min-h-12 flex-1 rounded-full border-2 border-brand bg-white font-heading text-lg text-brand transition hover:bg-brand-tint"
             onClick={() => { setDone(true); onRate(n); }}
           >
             {n}
@@ -142,12 +143,12 @@ function NextSteps({ courseId, lang }: { courseId: string; lang: Lang }) {
   if (!list || list.items.length === 0) return null;
   return (
     <section aria-labelledby="next-steps" className="space-y-2">
-      <h2 id="next-steps" className="font-bold">{t(lang, "nextSteps")}</h2>
+      <h2 id="next-steps" className="text-xl text-brand">{t(lang, "nextSteps")}</h2>
       <p className="text-sm">{t(lang, "nextStepsIntro")}</p>
       <ul className="space-y-2">
         {list.items.map((o) => (
-          <li key={o.id} className="border-l-4 border-brand bg-surface p-3">
-            <a className="font-bold text-brand underline" href={o.url} target="_blank" rel="noopener noreferrer">{o.title}</a>
+          <li key={o.id} className="card">
+            <a className="flex items-start gap-2 font-medium text-brand underline" href={o.url} target="_blank" rel="noopener noreferrer"><Icon name="external" className="mt-0.5 size-5" />{o.title}</a>
             <p className="text-sm">{o.type}{o.organization && ` · ${o.organization}`}</p>
           </li>
         ))}
@@ -282,25 +283,30 @@ export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: st
     }, sendToYoma);
 
   const scenarioCard = challenge && (
-    <section aria-labelledby="scenario" className="border-l-4 border-yellow bg-yellow/20 p-4">
-      <h2 id="scenario" className="text-sm font-bold uppercase">{t(lang, "yourChallenge")}</h2>
+    <section aria-labelledby="scenario" className="card-yellow">
+      <h2 id="scenario" className="text-sm uppercase tracking-wider text-brand">{t(lang, "yourChallenge")}</h2>
       <p className="mt-1 text-lg">{challenge.text}</p>
     </section>
   );
 
   // One focusable heading per screen (tabIndex -1: focusable by script, not a tab stop).
   const h1 = (text: string, srOnly = false) => (
-    <h1 ref={heading} tabIndex={-1} className={srOnly ? "sr-only" : "text-2xl font-bold outline-none"}>{text}</h1>
+    <h1 ref={heading} tabIndex={-1} className={srOnly ? "sr-only" : "text-3xl text-brand outline-none"}>{text}</h1>
   );
 
   return (
     <main className="mx-auto max-w-md space-y-4 p-4" lang={lang}>
       <header>
-        <p className="text-sm font-bold text-brand">{courseTitle[lang]} · {t(lang, "levelUp")}</p>
-        {step !== "lang" && step !== "saved" && <p className="text-sm">{t(lang, "level")} {level} / 2</p>}
+        <p className="chip inline-block">{courseTitle[lang]} · {t(lang, "levelUp")}</p>
+        {step !== "lang" && step !== "saved" && (
+          <div className="mt-2 flex items-center gap-2 text-sm" aria-label={`${t(lang, "level")} ${level} / 2`}>
+            {[1, 2].map((n) => <span key={n} aria-hidden="true" className={`h-2 flex-1 rounded-full ${n <= level ? "bg-brand" : "bg-brand-soft/50"}`} />)}
+            <span>{t(lang, "level")} {level} / 2</span>
+          </div>
+        )}
       </header>
 
-      {!online && <p role="status" className="border-l-4 border-coral bg-coral/10 p-3">{t(lang, "offline")}</p>}
+      {!online && <p role="status" className="card-alert">{t(lang, "offline")}</p>}
 
       {step === "lang" && (
         <section className="space-y-3">
@@ -308,7 +314,7 @@ export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: st
           <p>{t(lang, "lowStakes")}</p>
           {languages.map((l) => (
             <button key={l} type="button" className="btn" disabled={busy || !online} onClick={() => chooseLang(l)}>
-              {t(l, "langName")}
+              <Icon name="globe" /> {t(l, "langName")}
             </button>
           ))}
         </section>
@@ -320,7 +326,7 @@ export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: st
           {scenarioCard}
           <p>{t(lang, "lowStakes")}</p>
           <button type="button" className="btn" onClick={() => setStep("answer")}>
-            {t(lang, "startAnswer")}
+            <Icon name="arrow" /> {t(lang, "startAnswer")}
           </button>
         </>
       )}
@@ -330,22 +336,22 @@ export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: st
           {h1(`${t(lang, "level")} ${level} / 2: ${t(lang, "answerLabel")}`, true)}
           {scenarioCard}
           {level === 2 && feedback && (
-            <section aria-labelledby="tip" className="border-l-4 border-coral bg-coral/10 p-3">
-              <h3 id="tip" className="font-bold">{t(lang, "level2Intro")}</h3>
+            <section aria-labelledby="tip" className="card-brand">
+              <h3 id="tip" className="flex items-center gap-2 text-lg text-brand"><Icon name="info" className="size-5" />{t(lang, "level2Intro")}</h3>
               <p className="mt-1">{feedback.suggestion.text}</p>
             </section>
           )}
-          {notice === "resumed" && <p role="status" className="bg-surface p-3 text-sm">{t(lang, "resumed")}</p>}
-          {notice === "too_short" && <p role="alert" className="border-l-4 border-yellow bg-yellow/20 p-3">{t(lang, "tooShort")}</p>}
+          {notice === "resumed" && <p role="status" className="card text-sm">{t(lang, "resumed")}</p>}
+          {notice === "too_short" && <p role="alert" className="card-yellow flex gap-2"><Icon name="info" className="size-5 text-brand" />{t(lang, "tooShort")}</p>}
           {notice === "flagged" && (
-            <section role="alert" aria-labelledby="safety" className="border-l-4 border-coral bg-coral/10 p-3">
-              <h3 id="safety" className="font-bold">{t(lang, "safetyTitle")}</h3>
+            <section role="alert" aria-labelledby="safety" className="card-alert">
+              <h3 id="safety" className="flex items-center gap-2 text-lg text-coral"><Icon name="alert" className="size-5" />{t(lang, "safetyTitle")}</h3>
               <p className="mt-1">{t(lang, "safetyBody")}</p>
             </section>
           )}
           <AnswerInput lang={lang} value={answer} onChange={(v) => { setAnswer(v); if (notice !== "resumed") setNotice(null); }} />
           <button type="button" className="btn" disabled={busy || !online || !answer.trim()} onClick={getFeedback}>
-            {busy ? t(lang, "thinking") : t(lang, "getFeedback")}
+            {!busy && <Icon name="arrow" />}{busy ? t(lang, "thinking") : t(lang, "getFeedback")}
           </button>
         </>
       )}
@@ -354,16 +360,16 @@ export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: st
         <>
           {h1(`${t(lang, "level")} ${level} / 2: ${t(lang, "didWell")} / ${t(lang, "toImprove")}`, true)}
           {scenarioCard}
-          {feedback.redacted.length > 0 && <p role="status" className="bg-surface p-3 text-sm">{t(lang, "privacyNote")}</p>}
+          {feedback.redacted.length > 0 && <p role="status" className="card text-sm">{t(lang, "privacyNote")}</p>}
           <FeedbackPanels feedback={feedback} lang={lang} />
           <Rating key={level} lang={lang} onRate={rate} />
           {level === 1 ? (
             <button type="button" className="btn" onClick={() => { setLevel(2); setNotice(null); setStep("answer"); }}>
-              {t(lang, "tryLevel2")}
+              <Icon name="arrow" /> {t(lang, "tryLevel2")}
             </button>
           ) : (
             <button type="button" className="btn" onClick={save}>
-              {t(lang, "save")}
+              <Icon name="check" /> {t(lang, "save")}
             </button>
           )}
         </>
@@ -371,34 +377,35 @@ export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: st
 
       {step === "saved" && saved && (
         <section className="space-y-3">
-          {h1(`✓ ${t(lang, "saved")}`)}
-          <p className="inline-block bg-brand px-2 py-1 text-sm font-bold text-white">{t(lang, "practiceLabel")}</p>
+          <span className="grid size-14 place-items-center rounded-full bg-brand-tint text-brand"><Icon name="check" className="size-8" /></span>
+          {h1(t(lang, "saved"))}
+          <p className="inline-block rounded-full bg-brand px-3 py-1 text-sm font-medium text-white">{t(lang, "practiceLabel")}</p>
           {scenarioCard}
-          <p className="border-2 border-brand p-3">{saved.answer}</p>
+          <p className="rounded-2xl border-2 border-brand-soft p-4">{saved.answer}</p>
           <section aria-labelledby="skills">
-            <h2 id="skills" className="font-bold">{t(lang, "skillsPractised")}</h2>
+            <h2 id="skills" className="text-xl text-brand">{t(lang, "skillsPractised")}</h2>
             <ul className="mt-2 flex flex-wrap gap-2">
-              {saved.skills.map((s) => <li key={s.id} className="bg-surface px-2 py-1 text-sm">{s.name}</li>)}
+              {saved.skills.map((s) => <li key={s.id} className="chip">{s.name}</li>)}
             </ul>
           </section>
           {yoma === "idle" || yoma === "sending" ? (
             <button type="button" className="btn-secondary" disabled={busy || !online} onClick={sendToYoma}>
-              {yoma === "sending" ? t(lang, "sendingYoma") : t(lang, "addToYoma")}
+              {yoma !== "sending" && <Icon name="arrow" />}{yoma === "sending" ? t(lang, "sendingYoma") : t(lang, "addToYoma")}
             </button>
           ) : (
-            <p role="status" className="font-bold">✓ {t(lang, yoma === "sent" ? "sentYoma" : "sentYomaDemo")}</p>
+            <p role="status" className="card-brand flex gap-2 font-medium text-brand"><Icon name="check" />{t(lang, yoma === "sent" ? "sentYoma" : "sentYomaDemo")}</p>
           )}
           <NextSteps courseId={courseId} lang={lang} />
-          <button type="button" className="btn-secondary" onClick={startOver}>{t(lang, "tryAnother")}</button>
+          <button type="button" className="btn-secondary" onClick={startOver}><Icon name="retry" /> {t(lang, "tryAnother")}</button>
         </section>
       )}
 
       {busy && slow && <p role="status" className="text-sm">{t(lang, "stillWorking")}</p>}
 
       {error && (
-        <div role="alert" className="space-y-2 border-l-4 border-coral p-3">
-          <p>{t(lang, error.key)}</p>
-          <button type="button" className="btn-secondary" disabled={busy || !online} onClick={error.retry}>{t(lang, "retry")}</button>
+        <div role="alert" className="card-alert space-y-3">
+          <p className="flex gap-2"><Icon name="alert" className="size-5 text-coral" />{t(lang, error.key)}</p>
+          <button type="button" className="btn-secondary" disabled={busy || !online} onClick={error.retry}><Icon name="retry" /> {t(lang, "retry")}</button>
         </div>
       )}
     </main>

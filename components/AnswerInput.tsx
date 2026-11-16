@@ -4,8 +4,10 @@ import { useRef, useState } from "react";
 import { compressImage } from "../lib/compressImage";
 import { t } from "../lib/i18n";
 import type { Lang } from "../lib/schema";
+import { Icon, type IconName } from "./Icon";
 
 type Mode = "type" | "speak" | "photo";
+const MODE_ICON: Record<Mode, IconName> = { type: "pencil", speak: "mic", photo: "camera" };
 
 // Web Speech API is not in TypeScript's DOM types; this is the part we use.
 interface Recognition {
@@ -83,14 +85,14 @@ export function AnswerInput({ lang, value, onChange }: Props) {
   }
 
   const tab = (m: Mode) =>
-    `min-h-12 flex-1 border-2 border-brand font-bold ${mode === m ? "bg-brand text-white" : "bg-white text-brand"}`;
+    `inline-flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-full font-heading text-lg tracking-wide transition ${mode === m ? "bg-brand text-white shadow-sm" : "text-brand hover:bg-white"}`;
 
   return (
     <div className="space-y-3">
-      <div role="group" aria-label={`${t(lang, "type")} / ${t(lang, "speak")} / ${t(lang, "photo")}`} className="flex">
+      <div role="group" aria-label={`${t(lang, "type")} / ${t(lang, "speak")} / ${t(lang, "photo")}`} className="flex gap-1 rounded-full bg-brand-tint p-1">
         {(["type", "speak", "photo"] as const).map((m) => (
           <button key={m} type="button" aria-pressed={mode === m} className={tab(m)} onClick={() => setMode(m)}>
-            {t(lang, m)}
+            <Icon name={MODE_ICON[m]} className="size-5" /> {t(lang, m)}
           </button>
         ))}
       </div>
@@ -98,7 +100,7 @@ export function AnswerInput({ lang, value, onChange }: Props) {
       {mode === "speak" &&
         (typeof window !== "undefined" && getRecognition() ? (
           <button type="button" className="btn-secondary" onClick={toggleSpeech}>
-            {listening ? `■ ${t(lang, "speakStop")}` : `● ${t(lang, "speakStart")}`}
+            <Icon name="mic" /> {listening ? t(lang, "speakStop") : t(lang, "speakStart")}
           </button>
         ) : (
           <p role="status">{t(lang, "speakUnsupported")}</p>
@@ -107,8 +109,8 @@ export function AnswerInput({ lang, value, onChange }: Props) {
 
       {mode === "photo" && (
         <div className="space-y-2">
-          <label className="btn-secondary flex cursor-pointer items-center justify-center">
-            {t(lang, "photoLabel")}
+          <label className="btn-secondary cursor-pointer">
+            <Icon name="camera" /> {t(lang, "photoLabel")}
             <input
               type="file"
               accept="image/*"
@@ -127,17 +129,17 @@ export function AnswerInput({ lang, value, onChange }: Props) {
       )}
 
       <label className="block">
-        <span className="font-bold">{t(lang, "answerLabel")}</span>
+        <span className="font-heading text-lg text-brand">{t(lang, "answerLabel")}</span>
         <textarea
           aria-label={t(lang, "answerLabel")}
-          className="mt-1 block min-h-40 w-full border-2 border-brand p-3 text-lg"
+          className="mt-1 block min-h-40 w-full rounded-2xl border-2 border-brand-soft p-4 text-lg focus:border-brand"
           value={value}
           maxLength={2000}
           onChange={(e) => onChange(e.target.value)}
           aria-describedby="answer-count"
         />
       </label>
-      <p id="answer-count" className="text-right text-sm">
+      <p id="answer-count" className="text-right text-sm text-ink/70">
         {value.length} / 2000 {t(lang, "characters")}
       </p>
     </div>

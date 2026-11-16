@@ -34,16 +34,16 @@ export default function Facilitator() {
 
   return (
     <main className="mx-auto max-w-3xl space-y-6 p-4">
-      <header className="bg-brand p-4 text-white">
-        <h1 className="text-2xl font-bold">SkillLens facilitator view</h1>
+      <header className="rounded-3xl bg-brand p-5 text-white">
+        <h1 className="text-3xl">SkillLens facilitator view</h1>
         <p className="text-sm">Flags are kept for 72 hours. Excerpts have personal details removed. Raw answers and photos are never stored.</p>
       </header>
 
       <section aria-labelledby="flags" className="space-y-3">
-        <h2 id="flags" className="text-xl font-bold">Flagged cases ({open.length} to review)</h2>
+        <h2 id="flags" className="text-2xl text-brand">Flagged cases ({open.length} to review)</h2>
         {flags.length === 0 && <p>No flagged cases.</p>}
         {flags.map((f) => (
-          <article key={f.id} className={`border-l-4 p-3 ${f.reviewed ? "border-ink/30 bg-surface" : "border-coral bg-coral/10"}`}>
+          <article key={f.id} className={f.reviewed ? "card" : "card-alert"}>
             <p className="font-bold">
               {STAGE_LABEL[f.stage]} · {f.categories.map((c) => `${c.category} (severity ${c.severity})`).join(", ")}
             </p>
@@ -64,7 +64,7 @@ export default function Facilitator() {
       </section>
 
       <section aria-labelledby="ratings" className="space-y-2">
-        <h2 id="ratings" className="text-xl font-bold">Was the feedback helpful? (1-5)</h2>
+        <h2 id="ratings" className="text-2xl text-brand">Was the feedback helpful? (1-5)</h2>
         {byTemplate.length === 0 ? (
           <p>No ratings yet.</p>
         ) : (

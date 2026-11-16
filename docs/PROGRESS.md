@@ -19,7 +19,7 @@ SkillLens is an optional 10-minute challenge at the end of a P2E course. It clos
 
 Every step below runs on real model and Yoma calls except the final save to Yoma.
 
-1. **Course complete** (mock P2E page, P2E purple): "Challenge yourself! A 10-minute level-up" opens SkillLens in an iframe.
+1. **Course complete** (mock P2E page in the P2E site look: blue, yellow, Oswald and Jost, rounded): "Challenge yourself! A 10-minute level-up" opens SkillLens in an iframe.
 2. **Language**: English or Nigerian Pidgin.
 3. **Scenario**: an educator-approved template with local details (names, goods, naira prices) chosen by the model. Real.
 4. **Answer** by typing, speaking (Chrome voice-to-text) or a photo of handwriting, which the model reads into editable text. Real.

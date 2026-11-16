@@ -118,3 +118,25 @@ After saving, the learner sees up to four Yoma opportunities from the public, an
 | Real educator-scored answers | Agreement numbers on synthetic data mean nothing |
 | Native-speaker review of the Pidgin text | Written by the team, unreviewed |
 | Rate limiting on `/api/*` | Protects model spend |
+
+## 6. Path to Yoma integration
+
+Each step builds on code that already exists. Each one changes settings or adds one adapter, not a rewrite.
+
+| Step | What changes | Where | Needs |
+| --- | --- | --- | --- |
+| 1. Today | Embedded in a mock P2E page. Real skills and opportunities come from Yoma stage. Saving to Yoma is a preview (`YOMA_MODE=mock`). | `app/embed/skilllens`, `lib/yoma/*` | Nothing |
+| 2. Yoma stage pilot | An org admin creates the two opportunities (section 3). Set `YOMA_MODE=live`, `YOMA_API_BASE_URL` (stage) and `YOMA_OPPORTUNITY_IDS`. The host page passes the learner's Yoma token from SSO. | `.env`, host page | Yoma stage org admin and SSO client |
+| 3. GenU Azure | Set `AI_PROVIDER=foundry` and `CONTENT_SAFETY_PROVIDER=azure` with the Azure keys. No code changes. | `.env` | Azure OpenAI and Content Safety resources |
+| 4. Production store | Swap the in-memory flags and ratings in `lib/store.ts` for a database with a 72-hour TTL. Same function signatures. | `lib/store.ts` | A database |
+| 5. Inside Yoma | Embed `/embed/skilllens` in a Yoma page the same way as P2E: set `NEXT_PUBLIC_P2E_ORIGIN` to Yoma's origin, which sets both `frame-ancestors` and the `postMessage` target. To keep P2E and Yoma at once, make that setting a list. Or move the components into Yoma's web app. The API routes stay as they are. | `next.config.ts`, `components/*` | Yoma front-end team |
+| 6. Partner endpoint | If Yoma adds the endpoint from open question 2, replace `submitToYoma` in `lib/yoma/client.ts`. Its callers keep the same `YomaResult`. | `lib/yoma/client.ts` | Yoma API change |
+
+### Seams that make this possible
+
+- **AI:** `lib/ai/provider.ts` picks mock, local or Azure (`foundry`) from `AI_PROVIDER`. All three share one OpenAI-compatible client and the same versioned prompts (`prompts/v2`).
+- **Safety:** `lib/safety/contentSafety.ts` picks stub, model or Azure from `CONTENT_SAFETY_PROVIDER`. The rest of the pipeline (`lib/pipeline.ts`) does not change.
+- **Yoma:** all Yoma calls are in `lib/yoma/`. Field names follow Yoma's C# request models, and every call has a mock or snapshot fallback.
+- **Data contract:** the saved practice sample (section 2) is a Zod schema in `lib/schema.ts`. It is the one shape P2E, Yoma and SkillLens all share.
+- **Look:** every colour and font is a token in `app/globals.css` (`@theme`). Today they match the Passport to Earning site: blue `#0a59a7`, yellow `#ffcb03`, Oswald and Jost. A Yoma-branded version means changing that one block.
+- **Status:** `/status` and `GET /api/status` show which integrations are real or simulated, and whether each one can be reached.
