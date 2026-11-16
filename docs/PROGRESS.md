@@ -97,6 +97,19 @@ SkillLens uses two live Yoma APIs today with no login, and has the third (saving
 4. Ideally a Yoma partner endpoint that records a completion with a partner token, so P2E never holds a learner's Yoma token.
 5. A skills filter on the public opportunity search; today SkillLens searches by course keywords.
 
+### Path to Yoma integration
+
+Each step changes settings or one adapter. None needs a rewrite. Full detail is in INTEGRATION.md, section 6.
+
+| Step | What changes | Needs |
+| --- | --- | --- |
+| 1. Today | Mock P2E page. Real Yoma skills and opportunities from stage. Saving to Yoma is a preview. | Nothing |
+| 2. Yoma stage pilot | `YOMA_MODE=live`, stage URL and opportunity ids; the host page passes the learner's Yoma token from SSO | Yoma stage org admin and SSO client |
+| 3. GenU Azure | `AI_PROVIDER=foundry`, `CONTENT_SAFETY_PROVIDER=azure` with Azure keys. No code changes. | Azure OpenAI and Content Safety |
+| 4. Production store | Swap the in-memory flags and ratings (`lib/store.ts`) for a database with a 72-hour TTL | A database |
+| 5. Inside Yoma | Embed `/embed/skilllens` in a Yoma page the same way as P2E, or move the components into Yoma's web app | Yoma front-end team |
+| 6. Partner endpoint | If Yoma adds one, replace `submitToYoma` only | Yoma API change |
+
 ## Testing and validation
 
 On the real local model, all 20 learner scenarios pass and every safety gate holds across 80 held-out answers and 10 attack inputs, after fixing six problems that testing found. Reports: [docs/test-results](test-results).
@@ -159,6 +172,7 @@ Then open `http://localhost:3000/demo/p2e` in the browser's phone view. `npm run
 
 | Date | Step | What changed |
 | --- | --- | --- |
+| 2026-11-16 | P2E site look and Yoma path (d344dfc) | Restyled to match the Passport to Earning site (blue and yellow, Oswald and Jost fonts self-hosted, pill buttons, rounded cards, round inline-SVG icons); contrast rechecked (white on blue 7.0:1); step-by-step Yoma integration path in INTEGRATION.md and this document |
 | 2026-11-16 | Sprint: GenU development requirements (done) | Real AI through a local model; model-based safety; live Yoma opportunities; real-vs-simulated status page; offline, reload and accessibility fixes; prompts v2 and a praise check; retries and a reply cap; 20 scenarios; private GitHub repo with CI; this document |
 | 2026-11-15 | Phases 3-4, Yoma, P2E look (cd5c586) | P2E colours; personal-detail stripping; content screening; facilitator view; eval harness; Yoma skill mapping, evidence PDF, CSV and client; retries, timeouts and security headers |
 | 2026-10-23 | Phase 2 (458c878) | Microsoft Foundry provider behind the AI interface, versioned prompts |
