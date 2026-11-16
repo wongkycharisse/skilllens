@@ -12,7 +12,8 @@ import type { Template } from "../lib/schema";
 import { listFlags } from "../lib/store";
 import { fillTemplate, slotValues } from "../lib/template";
 
-const CONCURRENCY = 4;
+// EVAL_CONCURRENCY: parallel model calls. 4 overloads one laptop model (requests queue past the 90 s timeout); use 1-2 locally.
+const CONCURRENCY = Number(process.env.EVAL_CONCURRENCY) || 4;
 const deps = defaultDeps();
 const values = slotValues(locale, 0);
 

@@ -36,9 +36,9 @@ Set `AI_PROVIDER=foundry` and the `FOUNDRY_*` variables, and `CONTENT_SAFETY_PRO
 ### Check everything
 
 ```bash
-npm run check       # lint, types, 71 unit and route tests, offline eval, production build (no model needed)
+npm run check       # lint, types, 76 unit and route tests, offline eval, production build (no model needed)
 npm run eval        # agreement and safety report with the model in .env.local
-npm run scenarios   # 19 realistic, edge-case and failure scenarios with the model in .env.local
+npm run scenarios   # 20 realistic, edge-case and failure scenarios with the model in .env.local
 ```
 
 GitHub Actions runs `npm run check` on every push.
@@ -70,8 +70,9 @@ Things to try:
 | `npm test` | Unit and route tests (Vitest), no network |
 | `npm run eval` | AI–educator agreement and safety report with the configured model, saved to `reports/` |
 | `npm run eval:mock` | The same eval in simulated mode (used by `check`) |
-| `npm run scenarios` | 19 realistic, edge-case and failure scenarios, saved to `reports/` |
+| `npm run scenarios` | 20 realistic, edge-case and failure scenarios, saved to `reports/` |
 | `npm run check` | Lint, type check, tests, offline eval and production build: run before every commit |
+| `EVAL_CONCURRENCY=2 npm run eval` | Fewer parallel model calls (use 1-2 for a laptop model; default 4) |
 | `npm run seed` | Regenerate `data/synthetic/samples.json` from the answer fragments |
 | `npm run yoma:sync` | Refresh Yoma skill ids and the opportunity snapshot from Yoma's public API |
 | `npm run build` / `npm start` | Production build and server |

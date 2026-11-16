@@ -58,7 +58,7 @@ describe("foundry provider", () => {
     expect(c.text).toBe("Bala sells yams in Kano for ₦2,000 a tuber. Sales drop on rainy days. What should Bala change?");
     expect(fetchMock.mock.calls[0][0]).toBe("https://res.openai.azure.com/openai/v1/chat/completions");
     expect(fetchMock.mock.calls[0][1].headers["api-key"]).toBe("test-key");
-    expect(body(fetchMock)).toMatchObject({ model: "chat-dep", response_format: { type: "json_object" } });
+    expect(body(fetchMock)).toMatchObject({ model: "chat-dep", max_tokens: 600, response_format: { type: "json_object" } });
     expect(body(fetchMock).messages[0].content).not.toContain("{{");
   });
 

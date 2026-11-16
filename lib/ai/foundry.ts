@@ -50,6 +50,9 @@ const LANGUAGE_NAMES: Record<Lang, string> = { en: "simple English", pcm: "Niger
 // a small model can loop on one token ("token repeat limit reached") and would loop the same way again.
 const TEMPERATURE_LADDER = [0, 0.3, 0.6];
 const ATTEMPTS = TEMPERATURE_LADDER.length;
+// Replies are short JSON (feedback is about 150-250 tokens). A cap makes a model stuck repeating itself stop in seconds,
+// as invalid JSON that is retried warmer, instead of running until the request times out (seen in the eval: 3 of 80).
+const MAX_TOKENS = 600;
 
 type Message = { role: "system" | "user"; content: string | unknown[] };
 
@@ -68,7 +71,7 @@ export async function chatJson<T>(
       res = await fetch(`${config.baseUrl}/chat/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "api-key": config.apiKey },
-        body: JSON.stringify({ model, messages, temperature: Math.max(temperature, TEMPERATURE_LADDER.at(attempt)!), response_format: { type: "json_object" } }),
+        body: JSON.stringify({ model, messages, temperature: Math.max(temperature, TEMPERATURE_LADDER.at(attempt)!), max_tokens: MAX_TOKENS, response_format: { type: "json_object" } }),
         signal: AbortSignal.timeout(config.timeoutMs ?? 30_000),
       });
     } catch (e) {
