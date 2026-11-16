@@ -26,7 +26,7 @@ export function foundryConfigFromEnv(env: Record<string, string | undefined> = p
 
 const LANGUAGE_NAMES: Record<Lang, string> = { en: "simple English", pcm: "Nigerian Pidgin" };
 const TIMEOUT_MS = 30_000;
-const ATTEMPTS = 2; // one retry when the model returns JSON that fails validation
+const ATTEMPTS = 2; // one retry for invalid JSON, a rate limit (429) or a server error (5xx)
 
 type Message = { role: "system" | "user"; content: string | unknown[] };
 
@@ -39,7 +39,15 @@ async function chatJson<T>(config: FoundryConfig, model: string, messages: Messa
       body: JSON.stringify({ model, messages, response_format: { type: "json_object" } }),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
-    if (!res.ok) throw new Error(`Foundry request failed with status ${res.status}`);
+    if (!res.ok) {
+      lastError = new Error(`Foundry request failed with status ${res.status}`);
+      // Rate limits and server errors are worth one more try; anything else (bad key, bad deployment) is not.
+      if ((res.status === 429 || res.status >= 500) && attempt < ATTEMPTS - 1) {
+        await new Promise((r) => setTimeout(r, Math.min(Number(res.headers.get("retry-after")) * 1000 || 1000, 5000)));
+        continue;
+      }
+      throw lastError;
+    }
     const content = (await res.json())?.choices?.[0]?.message?.content;
     try {
       return parse(JSON.parse(content));

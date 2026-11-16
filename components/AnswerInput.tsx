@@ -33,7 +33,7 @@ interface Props {
 export function AnswerInput({ lang, value, onChange }: Props) {
   const [mode, setMode] = useState<Mode>("type");
   const [listening, setListening] = useState(false);
-  const [photoState, setPhotoState] = useState<"idle" | "reading" | "done" | "error">("idle");
+  const [photoState, setPhotoState] = useState<"idle" | "reading" | "done" | "error" | "flagged">("idle");
   const recognition = useRef<Recognition | null>(null);
   const append = (text: string) => onChange(value ? `${value.trimEnd()} ${text}` : text);
 
@@ -65,7 +65,9 @@ export function AnswerInput({ lang, value, onChange }: Props) {
       form.append("photo", await compressImage(file), "answer.jpg");
       const res = await fetch("/api/transcribe", { method: "POST", body: form });
       if (!res.ok) throw new Error();
-      append((await res.json()).text);
+      const body = (await res.json()) as { status: "ok"; text: string } | { status: "flagged" };
+      if (body.status === "flagged") return setPhotoState("flagged");
+      append(body.text);
       setPhotoState("done");
     } catch {
       setPhotoState("error");
@@ -73,7 +75,7 @@ export function AnswerInput({ lang, value, onChange }: Props) {
   }
 
   const tab = (m: Mode) =>
-    `min-h-12 flex-1 border-2 border-navy font-bold ${mode === m ? "bg-navy text-white" : "bg-white text-navy"}`;
+    `min-h-12 flex-1 border-2 border-brand font-bold ${mode === m ? "bg-brand text-white" : "bg-white text-brand"}`;
 
   return (
     <div className="space-y-3">
@@ -110,6 +112,7 @@ export function AnswerInput({ lang, value, onChange }: Props) {
             {photoState === "reading" && t(lang, "photoReading")}
             {photoState === "done" && t(lang, "photoCheck")}
             {photoState === "error" && t(lang, "error")}
+            {photoState === "flagged" && t(lang, "photoSafety")}
           </p>
         </div>
       )}
@@ -118,7 +121,7 @@ export function AnswerInput({ lang, value, onChange }: Props) {
         <span className="font-bold">{t(lang, "answerLabel")}</span>
         <textarea
           aria-label={t(lang, "answerLabel")}
-          className="mt-1 block min-h-40 w-full border-2 border-navy p-3 text-lg"
+          className="mt-1 block min-h-40 w-full border-2 border-brand p-3 text-lg"
           value={value}
           maxLength={2000}
           onChange={(e) => onChange(e.target.value)}

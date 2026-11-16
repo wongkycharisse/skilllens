@@ -75,11 +75,24 @@ describe("foundry provider", () => {
     await expect(provider.scoreAnswer({ challenge, rubric, examples: [], answer: "a", lang: "en" })).rejects.toThrow(/invalid output 2 times/);
   });
 
-  it("reports HTTP errors without leaking the key", async () => {
-    stubReplies(500);
+  it("reports HTTP errors without leaking the key, after one retry for a server error", async () => {
+    const fetchMock = stubReplies(500, 500);
     const err = await provider.generateChallenge(template, locale, "en", 0).catch((e: Error) => e);
     expect(String(err)).toContain("500");
     expect(String(err)).not.toContain("test-key");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("retries a rate limit once and succeeds", async () => {
+    const fetchMock = stubReplies(429, { values: { name: "Bala", item: "yams", price: "₦2,000", unit: "tuber" } });
+    expect((await provider.generateChallenge(template, locale, "en", 0)).values.name).toBe("Bala");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not retry a bad key", async () => {
+    const fetchMock = stubReplies(401);
+    await expect(provider.generateChallenge(template, locale, "en", 0)).rejects.toThrow(/401/);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it("sends photos to the vision deployment as a data URL", async () => {

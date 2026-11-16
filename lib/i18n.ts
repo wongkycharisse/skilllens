@@ -30,6 +30,19 @@ const en = {
   saved: "Saved to your profile",
   practiceLabel: "Practice sample, not a certification",
   error: "Something went wrong. Please try again.",
+  retry: "Try again",
+  slow: "The internet is slow. Please try again.",
+  safetyTitle: "Let's keep this about the challenge",
+  safetyBody: "Your answer was not sent for feedback. Please change it and try again. If something is worrying you, talk to your facilitator or an adult you trust.",
+  photoSafety: "We could not use that photo. Please type your answer instead.",
+  privacyNote: "We removed personal details (like phone numbers or names) from your answer.",
+  rateQuestion: "Was this feedback helpful?",
+  rateThanks: "Thank you!",
+  skillsPractised: "Skills you practised",
+  addToYoma: "Add to my Yoma profile",
+  sendingYoma: "Sending to Yoma…",
+  sentYoma: "Sent to your Yoma profile",
+  sentYomaDemo: "Ready for Yoma (demo: nothing was sent)",
 };
 
 const pcm: typeof en = {
@@ -60,6 +73,19 @@ const pcm: typeof en = {
   saved: "E don save for your profile",
   practiceLabel: "Practice sample, no be certificate",
   error: "Something no work. Abeg try again.",
+  retry: "Try again",
+  slow: "Network dey slow. Abeg try again.",
+  safetyTitle: "Make we talk about the challenge",
+  safetyBody: "We no send your answer for feedback. Abeg change am, then try again. If something dey worry you, talk to your facilitator or one big person wey you trust.",
+  photoSafety: "We no fit use that photo. Abeg type your answer.",
+  privacyNote: "We remove your personal details (like phone number or name) from your answer.",
+  rateQuestion: "This feedback help you?",
+  rateThanks: "Thank you!",
+  skillsPractised: "Skills wey you practise",
+  addToYoma: "Add am to my Yoma profile",
+  sendingYoma: "We dey send am to Yoma…",
+  sentYoma: "E don reach your Yoma profile",
+  sentYomaDemo: "E ready for Yoma (demo: we no send anything)",
 };
 
 const dictionaries: Record<Lang, typeof en> = { en, pcm };

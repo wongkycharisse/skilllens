@@ -1,0 +1,85 @@
+// The one path every learner input and model output takes: strip personal details, screen, call the model, screen again.
+// Used by the API routes and by the eval harness, so the eval measures exactly what learners get.
+import { getProvider, type AIProvider } from "./ai/provider";
+import { mockProvider } from "./ai/mock";
+import { getSafety, type ContentSafety, type SafetyResult } from "./safety/contentSafety";
+import { redactPii, type PiiKind } from "./safety/pii";
+import type { Challenge, Feedback, Lang, Locale, Rubric, Sample, Template } from "./schema";
+import { addFlag } from "./store";
+
+export interface Deps {
+  provider: AIProvider;
+  safety: ContentSafety;
+}
+
+export const defaultDeps = (): Deps => ({ provider: getProvider(), safety: getSafety() });
+
+export type Flagged = { status: "flagged"; categories: SafetyResult["categories"] };
+
+export type ScoreOutcome =
+  | {
+      status: "ok";
+      feedback: Feedback;
+      /** The answer with personal details removed: the only version that is ever saved. */
+      answer: string;
+      redacted: PiiKind[];
+      /** True when the model's feedback was flagged and replaced with the educator-written rubric text. */
+      fallback: boolean;
+    }
+  | Flagged;
+
+export interface ScoreRequest {
+  challenge: Challenge;
+  rubric: Rubric;
+  examples: Sample[];
+  answer: string;
+  lang: Lang;
+}
+
+const feedbackText = (fb: Feedback) => [...fb.strengths.map((s) => s.text), fb.suggestion.text].join("\n");
+
+export async function scoreSafely(req: ScoreRequest, deps: Deps = defaultDeps()): Promise<ScoreOutcome> {
+  const { text: answer, found } = redactPii(req.answer);
+  const context = { courseId: req.challenge.courseId, templateId: req.challenge.templateId, lang: req.lang };
+
+  const input = await deps.safety.checkText(answer);
+  if (input.flagged) {
+    addFlag({ ...context, stage: "answer", categories: input.categories, excerpt: answer });
+    return { status: "flagged", categories: input.categories };
+  }
+
+  const scoreInput = { ...req, answer };
+  const feedback = await deps.provider.scoreAnswer(scoreInput);
+  const output = await deps.safety.checkText(feedbackText(feedback));
+  if (!output.flagged) return { status: "ok", feedback, answer, redacted: found, fallback: false };
+
+  // Never show flagged model output. The mock provider uses only educator-written rubric text, so it is a safe stand-in.
+  addFlag({ ...context, stage: "feedback", categories: output.categories, excerpt: "" });
+  return { status: "ok", feedback: await mockProvider.scoreAnswer(scoreInput), answer, redacted: found, fallback: true };
+}
+
+export async function challengeSafely(template: Template, locale: Locale, lang: Lang, seed: number, deps: Deps = defaultDeps()): Promise<Challenge> {
+  const challenge = await deps.provider.generateChallenge(template, locale, lang, seed);
+  const check = await deps.safety.checkText(challenge.text);
+  if (!check.flagged) return challenge;
+  addFlag({ courseId: template.courseId, templateId: template.id, lang, stage: "challenge", categories: check.categories, excerpt: "" });
+  // Fall back to the educator-written local details instead of the model's picks.
+  return mockProvider.generateChallenge(template, locale, lang, seed);
+}
+
+export type TranscribeOutcome = { status: "ok"; text: string; redacted: PiiKind[] } | Flagged;
+
+export async function transcribeSafely(image: Uint8Array, mimeType: string, deps: Deps = defaultDeps()): Promise<TranscribeOutcome> {
+  const picture = await deps.safety.checkImage(image);
+  if (picture.flagged) {
+    addFlag({ stage: "photo", categories: picture.categories, excerpt: "" });
+    return { status: "flagged", categories: picture.categories };
+  }
+  const { text, found } = redactPii(await deps.provider.transcribePhoto(image, mimeType));
+  const check = await deps.safety.checkText(text);
+  if (check.flagged) {
+    addFlag({ stage: "photo", categories: check.categories, excerpt: text });
+    return { status: "flagged", categories: check.categories };
+  }
+  return { status: "ok", text, redacted: found };
+}

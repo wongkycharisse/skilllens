@@ -70,7 +70,24 @@ export const Feedback = z.object({
   suggestion: z.object({ criterionId: z.string(), text: z.string().min(1) }),
 });
 
+// A skill as Yoma stores it (GET /api/v3/lookup/skill). Ids come from data/yoma/skills.json.
+export const YomaSkill = z.object({ id: z.string().uuid(), name: z.string().min(1) });
+
+// The saved Level 2 answer. It travels via the browser to P2E and Yoma, so it is re-validated on the server.
+export const PracticeSample = z.object({
+  courseId: z.string().max(64),
+  templateId: z.string().max(64),
+  lang: Lang,
+  scenario: z.string().min(1).max(1000),
+  answer: z.string().trim().min(1).max(2000),
+  skills: z.array(YomaSkill).max(10),
+  savedAt: z.string().datetime(),
+  label: z.string().max(80),
+});
+
 export type Course = z.infer<typeof Course>;
+export type YomaSkill = z.infer<typeof YomaSkill>;
+export type PracticeSample = z.infer<typeof PracticeSample>;
 export type Rubric = z.infer<typeof Rubric>;
 export type Template = z.infer<typeof Template>;
 export type Locale = z.infer<typeof Locale>;

@@ -1,24 +1,32 @@
 @import "tailwindcss";
 
-/* UNICEF brand colours from the brief; components use straight edges (no radius). */
+/* Colours taken from the live P2E platform (unicef.myp2e.org) so SkillLens feels like part of the course.
+   Components keep straight edges (no radius), as the brief asks. */
 @theme {
-  --color-cyan: #1dabe3;
-  --color-navy: #001f60;
-  --color-yellow: #f2c14d;
-  --color-coral: #e8735a;
+  --color-brand: #49366c; /* P2E purple: white text on it is 10.4:1 */
+  --color-surface: #f4f4f4; /* P2E page grey */
+  --color-ink: #333333; /* P2E body text: 12.6:1 on white */
+  --color-yellow: #f2c14d; /* accent only: scenario card */
+  --color-coral: #e8735a; /* accent only: "to improve" and errors; never text */
   --radius-*: initial;
 }
 
-/* Large tap targets for cheap phones. Navy on white passes contrast; cyan is accent-only. */
+/* Large tap targets for cheap phones. */
 @utility btn {
-  @apply min-h-12 w-full bg-navy px-4 text-lg font-bold text-white disabled:opacity-50;
+  @apply min-h-12 w-full bg-brand px-4 text-lg font-bold text-white disabled:opacity-50;
 }
 @utility btn-secondary {
-  @apply min-h-12 w-full border-2 border-navy bg-white px-4 text-lg font-bold text-navy;
+  @apply min-h-12 w-full border-2 border-brand bg-white px-4 text-lg font-bold text-brand;
 }
 
 body {
   background: #ffffff;
-  color: var(--color-navy);
-  font-family: system-ui, sans-serif;
+  color: var(--color-ink);
+  /* P2E's font stack: Segoe UI where present, otherwise the phone's own UI font, no download */
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-brand); /* 10.4:1 on white; yellow would fail 3:1 */
+  outline-offset: 2px;
 }

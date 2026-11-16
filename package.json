@@ -8,7 +8,11 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx scripts/generate-samples.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "yoma:skills": "tsx scripts/yoma-skills.mts",
+    "eval": "tsx --env-file-if-exists=.env.local scripts/eval.ts",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm run typecheck && npm test && npm run eval && npm run build"
   },
   "dependencies": {
     "next": "15.5.28",
@@ -28,5 +32,8 @@
     "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^3.2.7"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

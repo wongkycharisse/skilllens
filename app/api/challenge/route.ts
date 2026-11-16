@@ -1,20 +1,22 @@
 import { z } from "zod";
-import { getProvider } from "../../../lib/ai/provider";
+import { badRequest, handle, parseJson } from "../../../lib/api";
 import { locale, templatesFor } from "../../../lib/data";
+import { challengeSafely } from "../../../lib/pipeline";
 import { Lang } from "../../../lib/schema";
 
 const Body = z.object({ course: z.string(), lang: Lang });
 
 export async function POST(req: Request) {
-  const body = Body.safeParse(await req.json().catch(() => null));
-  if (!body.success) return Response.json({ error: "Invalid request" }, { status: 400 });
+  const body = await parseJson(req, Body);
+  if (!body) return badRequest("Invalid request");
 
-  const options = templatesFor(body.data.course);
-  if (options.length === 0) return Response.json({ error: "Unknown course" }, { status: 400 });
+  const options = templatesFor(body.course);
+  if (options.length === 0) return badRequest("Unknown course");
 
-  const template = options[Math.floor(Math.random() * options.length)];
-  const seed = Math.floor(Math.random() * locale.slots.name.length);
-  const challenge = await getProvider().generateChallenge(template, locale, body.data.lang, seed);
-  const { templateId, lang, values, text } = challenge;
-  return Response.json({ templateId, lang, values, text });
+  return handle("challenge", async () => {
+    const template = options[Math.floor(Math.random() * options.length)];
+    const seed = Math.floor(Math.random() * locale.slots.name.length);
+    const { templateId, lang, values, text } = await challengeSafely(template, locale, body.lang, seed);
+    return Response.json({ templateId, lang, values, text });
+  });
 }
