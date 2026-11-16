@@ -9,10 +9,13 @@
     "lint": "eslint",
     "seed": "tsx scripts/generate-samples.ts",
     "test": "vitest run",
-    "yoma:skills": "tsx scripts/yoma-skills.mts",
     "eval": "tsx --env-file-if-exists=.env.local scripts/eval.ts",
     "typecheck": "tsc --noEmit",
-    "check": "npm run lint && npm run typecheck && npm test && npm run eval && npm run build"
+    "check": "npm run lint && npm run typecheck && npm test && npm run eval:mock && npm run build",
+    "yoma:sync": "tsx scripts/yoma-sync.ts",
+    "scenarios": "tsx --env-file-if-exists=.env.local scripts/scenarios.ts",
+    "setup": "tsx scripts/setup.ts",
+    "eval:mock": "AI_PROVIDER=mock CONTENT_SAFETY_PROVIDER=stub tsx scripts/eval.ts"
   },
   "dependencies": {
     "next": "15.5.28",

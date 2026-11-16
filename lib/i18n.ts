@@ -43,6 +43,16 @@ const en = {
   sendingYoma: "Sending to Yoma…",
   sentYoma: "Sent to your Yoma profile",
   sentYomaDemo: "Ready for Yoma (demo: nothing was sent)",
+  offline: "You are offline. Your answer is kept on this phone. Send it when you are back online.",
+  stillWorking: "Still working. On a slow connection this can take up to a minute.",
+  tooShort: "Add a little more: what should they do, and why?",
+  characters: "characters",
+  nextSteps: "Next steps on Yoma",
+  nextStepsIntro: "Opportunities that use the skills you just practised:",
+  nextStepsSnapshot: "Saved list: Yoma could not be reached just now.",
+  tryAnother: "Try another challenge",
+  speakError: "We could not hear you. Check the microphone, or type your answer.",
+  resumed: "We kept your answer from last time.",
 };
 
 const pcm: typeof en = {
@@ -86,6 +96,16 @@ const pcm: typeof en = {
   sendingYoma: "We dey send am to Yoma…",
   sentYoma: "E don reach your Yoma profile",
   sentYomaDemo: "E ready for Yoma (demo: we no send anything)",
+  offline: "Network no dey. We keep your answer for this phone. Send am when network come back.",
+  stillWorking: "We still dey work on am. If network slow, e fit take one minute.",
+  tooShort: "Add small more: wetin dem suppose do, and why?",
+  characters: "letters",
+  nextSteps: "Next steps for Yoma",
+  nextStepsIntro: "Opportunities wey use the skills wey you just practise:",
+  nextStepsSnapshot: "Saved list: we no fit reach Yoma now.",
+  tryAnother: "Try another challenge",
+  speakError: "We no hear you. Check the microphone, or type your answer.",
+  resumed: "We keep your answer from last time.",
 };
 
 const dictionaries: Record<Lang, typeof en> = { en, pcm };

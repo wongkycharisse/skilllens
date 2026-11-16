@@ -1,4 +1,6 @@
-// Microsoft Foundry provider: Azure OpenAI v1 chat completions (OpenAI-compatible), called with plain fetch.
+// OpenAI-compatible chat completions, called with plain fetch. Two configurations use it:
+// - "foundry": Microsoft Foundry / Azure OpenAI v1 (the target for GenU)
+// - "local":   a model on this machine through Ollama (real model calls with no account, until Azure keys exist)
 import { z } from "zod";
 import { Feedback, SlotValue, type Challenge, type Lang, type Locale, type Rubric, type Template } from "../schema";
 import { fillTemplate, templateSlots } from "../template";
@@ -10,6 +12,9 @@ export interface FoundryConfig {
   apiKey: string;
   chatModel: string;
   visionModel: string;
+  /** Shown in errors and on the status page. */
+  label?: string;
+  timeoutMs?: number;
 }
 
 export function foundryConfigFromEnv(env: Record<string, string | undefined> = process.env): FoundryConfig {
@@ -21,26 +26,55 @@ export function foundryConfigFromEnv(env: Record<string, string | undefined> = p
     apiKey: env.FOUNDRY_API_KEY!,
     chatModel: env.FOUNDRY_CHAT_DEPLOYMENT!,
     visionModel: env.FOUNDRY_VISION_DEPLOYMENT || env.FOUNDRY_CHAT_DEPLOYMENT!,
+    label: "Microsoft Foundry",
+    timeoutMs: Number(env.AI_TIMEOUT_MS) || 30_000,
+  };
+}
+
+/** A local model served by Ollama's OpenAI-compatible API. No key; the model must support JSON mode (and images, for photos). */
+export function localConfigFromEnv(env: Record<string, string | undefined> = process.env): FoundryConfig {
+  const chatModel = env.LOCAL_AI_MODEL || "gemma3:4b";
+  return {
+    baseUrl: (env.LOCAL_AI_BASE_URL || "http://localhost:11434/v1").replace(/\/+$/, ""),
+    apiKey: "local",
+    chatModel,
+    visionModel: env.LOCAL_AI_VISION_MODEL || chatModel,
+    label: "Local model",
+    // A small laptop model is slower than a cloud deployment, and the first call also loads it into memory.
+    timeoutMs: Number(env.AI_TIMEOUT_MS) || 90_000,
   };
 }
 
 const LANGUAGE_NAMES: Record<Lang, string> = { en: "simple English", pcm: "Nigerian Pidgin" };
-const TIMEOUT_MS = 30_000;
 const ATTEMPTS = 2; // one retry for invalid JSON, a rate limit (429) or a server error (5xx)
 
 type Message = { role: "system" | "user"; content: string | unknown[] };
 
-async function chatJson<T>(config: FoundryConfig, model: string, messages: Message[], parse: (raw: unknown) => T): Promise<T> {
+export async function chatJson<T>(
+  config: FoundryConfig,
+  model: string,
+  messages: Message[],
+  parse: (raw: unknown) => T,
+  temperature = 0,
+): Promise<T> {
+  const label = config.label ?? "Foundry";
   let lastError: unknown;
   for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
-    const res = await fetch(`${config.baseUrl}/chat/completions`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "api-key": config.apiKey },
-      body: JSON.stringify({ model, messages, response_format: { type: "json_object" } }),
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
+    let res: Response;
+    try {
+      res = await fetch(`${config.baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "api-key": config.apiKey },
+        body: JSON.stringify({ model, messages, temperature, response_format: { type: "json_object" } }),
+        signal: AbortSignal.timeout(config.timeoutMs ?? 30_000),
+      });
+    } catch (e) {
+      // Unreachable or timed out: one retry would usually wait just as long, so fail now with a clear reason.
+      const why = e instanceof DOMException && e.name === "TimeoutError" ? "timed out" : "could not be reached";
+      throw new Error(`${label} ${why} at ${config.baseUrl}`);
+    }
     if (!res.ok) {
-      lastError = new Error(`Foundry request failed with status ${res.status}`);
+      lastError = new Error(`${label} request failed with status ${res.status}`);
       // Rate limits and server errors are worth one more try; anything else (bad key, bad deployment) is not.
       if ((res.status === 429 || res.status >= 500) && attempt < ATTEMPTS - 1) {
         await new Promise((r) => setTimeout(r, Math.min(Number(res.headers.get("retry-after")) * 1000 || 1000, 5000)));
@@ -55,7 +89,7 @@ async function chatJson<T>(config: FoundryConfig, model: string, messages: Messa
       lastError = e;
     }
   }
-  throw new Error(`Foundry returned invalid output ${ATTEMPTS} times: ${lastError instanceof Error ? lastError.message : lastError}`);
+  throw new Error(`${label} returned invalid output ${ATTEMPTS} times: ${lastError instanceof Error ? lastError.message : lastError}`);
 }
 
 /** Feedback must cover exactly this rubric's criteria. */
@@ -80,7 +114,7 @@ export function createFoundryProvider(config: FoundryConfig): AIProvider {
         slots: slots.join(", "),
         examples: slots.map((s) => `- ${s}: ${locale.slots[s]?.join(", ") ?? "(no examples)"}`).join("\n"),
       });
-      const { values } = await chatJson(config, config.chatModel, [{ role: "system", content: prompt }], (raw) => Values.parse(raw));
+      const { values } = await chatJson(config, config.chatModel, [{ role: "system", content: prompt }], (raw) => Values.parse(raw), 0.8); // some variety in names and goods
       const all = { ...values, city: locale.city };
       return {
         templateId: template.id,

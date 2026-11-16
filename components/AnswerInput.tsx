@@ -11,6 +11,7 @@ type Mode = "type" | "speak" | "photo";
 interface Recognition {
   lang: string;
   continuous: boolean;
+  onerror: (e: { error: string }) => void;
   onresult: (e: { resultIndex: number; results: { 0: { transcript: string }; isFinal: boolean }[] }) => void;
   onend: () => void;
   start(): void;
@@ -33,6 +34,7 @@ interface Props {
 export function AnswerInput({ lang, value, onChange }: Props) {
   const [mode, setMode] = useState<Mode>("type");
   const [listening, setListening] = useState(false);
+  const [speechError, setSpeechError] = useState(false);
   const [photoState, setPhotoState] = useState<"idle" | "reading" | "done" | "error" | "flagged">("idle");
   const recognition = useRef<Recognition | null>(null);
   const append = (text: string) => onChange(value ? `${value.trimEnd()} ${text}` : text);
@@ -53,6 +55,12 @@ export function AnswerInput({ lang, value, onChange }: Props) {
         }
     };
     r.onend = () => setListening(false);
+    // "no-speech", "not-allowed" (microphone blocked) or "network" (Chrome's recogniser is online-only)
+    r.onerror = () => {
+      setSpeechError(true);
+      setListening(false);
+    };
+    setSpeechError(false);
     recognition.current = r;
     r.start();
     setListening(true);
@@ -95,6 +103,7 @@ export function AnswerInput({ lang, value, onChange }: Props) {
         ) : (
           <p role="status">{t(lang, "speakUnsupported")}</p>
         ))}
+      {mode === "speak" && speechError && <p role="alert">{t(lang, "speakError")}</p>}
 
       {mode === "photo" && (
         <div className="space-y-2">
@@ -125,8 +134,12 @@ export function AnswerInput({ lang, value, onChange }: Props) {
           value={value}
           maxLength={2000}
           onChange={(e) => onChange(e.target.value)}
+          aria-describedby="answer-count"
         />
       </label>
+      <p id="answer-count" className="text-right text-sm">
+        {value.length} / 2000 {t(lang, "characters")}
+      </p>
     </div>
   );
 }

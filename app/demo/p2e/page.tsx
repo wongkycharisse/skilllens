@@ -1,13 +1,43 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import coursesJson from "../../../data/synthetic/courses.json";
 import type { PracticeSample } from "../../../lib/schema";
 
 // Mock P2E host page, for demos only. The real P2E course page embeds the same iframe.
-const COURSES = [
-  { id: "financial-literacy", title: "Financial Literacy" },
-  { id: "job-readiness", title: "Job Readiness" },
-];
+// Courses come from the same file the embed uses, in P2E order: 1 Financial Literacy, 2 Job Readiness.
+const COURSES = coursesJson.items.map((c, i) => ({ id: c.id, n: i + 1, title: c.title.en }));
+
+interface Integration {
+  name: string;
+  mode: "real" | "simulated";
+  healthy: boolean | null;
+}
+
+/** Demo-only strip: says which parts are real API calls right now, so a demo never passes a stand-in off as real. */
+function DemoStatus() {
+  const [list, setList] = useState<Integration[] | null>(null);
+  useEffect(() => {
+    fetch("/api/status").then((r) => r.json()).then((d) => setList(d.integrations)).catch(() => setList(null));
+  }, []);
+  if (!list) return null;
+  return (
+    <details className="border-b border-ink/20 bg-surface px-4 py-2 text-sm">
+      <summary className="cursor-pointer font-bold">
+        Demo: {list.filter((i) => i.mode === "real").length} of {list.length} integrations real
+      </summary>
+      <ul className="mt-1 space-y-1">
+        {list.map((i) => (
+          <li key={i.name}>
+            {i.mode === "real" ? "Real" : "Simulated"}: {i.name}
+            {i.healthy === false && " (unreachable)"}
+          </li>
+        ))}
+      </ul>
+      <a className="underline" href="/status">Details</a>
+    </details>
+  );
+}
 
 export default function P2EDemo() {
   const [courseId, setCourseId] = useState(COURSES[0].id);
@@ -34,10 +64,11 @@ export default function P2EDemo() {
             value={courseId}
             onChange={(e) => { setCourseId(e.target.value); setOpen(false); setSaved(null); }}
           >
-            {COURSES.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
+            {COURSES.map((c) => <option key={c.id} value={c.id}>{c.n}. {c.title}</option>)}
           </select>
         </label>
       </header>
+      <DemoStatus />
 
       {saved && (
         <aside role="status" className="m-4 border-l-4 border-brand p-3">

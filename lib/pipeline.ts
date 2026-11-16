@@ -1,6 +1,6 @@
 // The one path every learner input and model output takes: strip personal details, screen, call the model, screen again.
 // Used by the API routes and by the eval harness, so the eval measures exactly what learners get.
-import { getProvider, type AIProvider } from "./ai/provider";
+import { aiConfig, getProvider, type AIProvider } from "./ai/provider";
 import { mockProvider } from "./ai/mock";
 import { getSafety, type ContentSafety, type SafetyResult } from "./safety/contentSafety";
 import { redactPii, type PiiKind } from "./safety/pii";
@@ -12,7 +12,7 @@ export interface Deps {
   safety: ContentSafety;
 }
 
-export const defaultDeps = (): Deps => ({ provider: getProvider(), safety: getSafety() });
+export const defaultDeps = (): Deps => ({ provider: getProvider(), safety: getSafety(process.env, aiConfig()) });
 
 export type Flagged = { status: "flagged"; categories: SafetyResult["categories"] };
 
@@ -26,7 +26,13 @@ export type ScoreOutcome =
       /** True when the model's feedback was flagged and replaced with the educator-written rubric text. */
       fallback: boolean;
     }
-  | Flagged;
+  | Flagged
+  /** Too short to give useful feedback on: no model call, the learner is asked to add more. */
+  | { status: "too_short" };
+
+/** Fewer than 4 words ("ok", "I don't know") cannot be scored against a rubric. */
+export const MIN_WORDS = 4;
+export const wordCount = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
 
 export interface ScoreRequest {
   challenge: Challenge;
@@ -39,6 +45,7 @@ export interface ScoreRequest {
 const feedbackText = (fb: Feedback) => [...fb.strengths.map((s) => s.text), fb.suggestion.text].join("\n");
 
 export async function scoreSafely(req: ScoreRequest, deps: Deps = defaultDeps()): Promise<ScoreOutcome> {
+  if (wordCount(req.answer) < MIN_WORDS) return { status: "too_short" };
   const { text: answer, found } = redactPii(req.answer);
   const context = { courseId: req.challenge.courseId, templateId: req.challenge.templateId, lang: req.lang };
 

@@ -1,5 +1,5 @@
 import type { Challenge, Feedback, Lang, Locale, Rubric, Sample, Template } from "../schema";
-import { createFoundryProvider, foundryConfigFromEnv } from "./foundry";
+import { createFoundryProvider, foundryConfigFromEnv, localConfigFromEnv, type FoundryConfig } from "./foundry";
 import { mockProvider } from "./mock";
 
 export interface ScoreInput {
@@ -19,8 +19,17 @@ export interface AIProvider {
   transcribePhoto(image: Uint8Array, mimeType: string): Promise<string>;
 }
 
+export type ProviderName = "mock" | "local" | "foundry";
+
+/** The config for a real model, or null in mock mode. Shared with the model-based safety check. */
+export function aiConfig(name = process.env.AI_PROVIDER ?? "mock"): FoundryConfig | null {
+  if (name === "mock") return null;
+  if (name === "local") return localConfigFromEnv();
+  if (name === "foundry") return foundryConfigFromEnv();
+  throw new Error(`Unknown AI_PROVIDER "${name}". Use "mock", "local" or "foundry".`);
+}
+
 export function getProvider(name = process.env.AI_PROVIDER ?? "mock"): AIProvider {
-  if (name === "mock") return mockProvider;
-  if (name === "foundry") return createFoundryProvider(foundryConfigFromEnv());
-  throw new Error(`Unknown AI_PROVIDER "${name}". Use "mock" or "foundry".`);
+  const config = aiConfig(name);
+  return config ? createFoundryProvider(config) : mockProvider;
 }

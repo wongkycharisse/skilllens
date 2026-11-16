@@ -37,7 +37,7 @@ export async function POST(req: Request) {
       answer,
       lang,
     });
-    if (outcome.status === "flagged") return Response.json({ status: "flagged" });
+    if (outcome.status !== "ok") return Response.json({ status: outcome.status });
     // Scores stay on the server: the learner never sees an overall or per-criterion score.
     const { strengths, suggestion } = outcome.feedback;
     return Response.json({

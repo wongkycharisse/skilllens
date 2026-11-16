@@ -4,6 +4,7 @@
 import { z } from "zod";
 import { badRequest, handle, parseJson } from "../../../lib/api";
 import { courses, templates } from "../../../lib/data";
+import { aiConfig } from "../../../lib/ai/provider";
 import { getSafety } from "../../../lib/safety/contentSafety";
 import { redactPii } from "../../../lib/safety/pii";
 import { PracticeSample } from "../../../lib/schema";
@@ -22,7 +23,7 @@ export async function POST(req: Request) {
 
   return handle("yoma", async () => {
     const answer = redactPii(body.sample.answer).text;
-    const check = await getSafety().checkText(`${body.sample.scenario}\n${answer}`);
+    const check = await getSafety(process.env, aiConfig()).checkText(`${body.sample.scenario}\n${answer}`);
     if (check.flagged) {
       addFlag({ stage: "yoma", categories: check.categories, courseId: course.id, templateId: template.id, lang: body.sample.lang, excerpt: answer });
       return Response.json({ status: "flagged" });

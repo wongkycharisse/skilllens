@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createAzureSafety, getSafety, stubSafety } from "./contentSafety";
+import { createAzureSafety, createModelSafety, getSafety, stubSafety } from "./contentSafety";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -35,5 +35,34 @@ describe("getSafety", () => {
     expect(getSafety({})).toBe(stubSafety);
     expect(() => getSafety({ CONTENT_SAFETY_PROVIDER: "azure" })).toThrow(/CONTENT_SAFETY_ENDPOINT, CONTENT_SAFETY_KEY/);
     expect(() => getSafety({ CONTENT_SAFETY_PROVIDER: "azure", CONTENT_SAFETY_ENDPOINT: "x", CONTENT_SAFETY_KEY: "k", CONTENT_SAFETY_THRESHOLD: "3" })).toThrow(/2, 4 or 6/);
+  });
+});
+
+describe("model safety", () => {
+  const config = { baseUrl: "http://localhost:11434/v1", apiKey: "local", chatModel: "m", visionModel: "m", label: "Local model" };
+  const reply = (content: unknown) => vi.fn(async () => Response.json({ choices: [{ message: { content: JSON.stringify(content) } }] }));
+
+  it("uses the model when the keywords pass, and flags at severity 2 or more", async () => {
+    const fetchMock = reply({ Hate: 0, SelfHarm: 2, Sexual: 0, Violence: 0 });
+    vi.stubGlobal("fetch", fetchMock);
+    expect(await createModelSafety(config).checkText("Nobody would miss me")).toEqual({ flagged: true, categories: [{ category: "SelfHarm", severity: 2 }] });
+    const sent = JSON.parse((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
+    expect(sent.messages[1].content).toContain("<<<\nNobody would miss me\n>>>");
+  });
+
+  it("skips the model when the keyword list already flags", async () => {
+    const fetchMock = reply({});
+    vi.stubGlobal("fetch", fetchMock);
+    expect((await createModelSafety(config).checkText("I want to kill myself")).flagged).toBe(true);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when the model is down", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => { throw new TypeError("fetch failed"); }));
+    await expect(createModelSafety(config).checkText("hello there friend")).rejects.toThrow(/could not be reached/);
+  });
+
+  it("needs a real AI provider", () => {
+    expect(() => getSafety({ CONTENT_SAFETY_PROVIDER: "model" }, null)).toThrow(/real AI_PROVIDER/);
   });
 });

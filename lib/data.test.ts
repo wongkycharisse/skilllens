@@ -45,3 +45,10 @@ describe("fillTemplate", () => {
     expect(() => fillTemplate("Hi {nobody}", {})).toThrow(/nobody/);
   });
 });
+
+describe("P2E course order", () => {
+  it("is 1 Financial Literacy, then 2 Job Readiness", () => {
+    expect(courses.map((c) => c.id)).toEqual(["financial-literacy", "job-readiness"]);
+    expect(courses.map((c) => c.title.en)).toEqual(["Financial Literacy", "Job Readiness"]);
+  });
+});

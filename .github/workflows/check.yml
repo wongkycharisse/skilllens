@@ -1,0 +1,22 @@
+# Proves a fresh clone builds and passes: lint, types, tests, offline eval and production build.
+# Runs in simulated mode (no model, no keys); real-model results come from `npm run eval` on a machine with a model.
+name: check
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run check

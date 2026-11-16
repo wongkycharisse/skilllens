@@ -31,7 +31,7 @@ describe("scoreSafely", () => {
 
   it("replaces flagged model feedback with educator-written rubric text", async () => {
     const bad = { ...mockProvider, scoreAnswer: async () => ({ scores: { cause: 1, action: 1, numbers: 1 }, strengths: [{ criterionId: "cause", text: "You are naked" }], suggestion: { criterionId: "numbers", text: "x" } }) };
-    const out = await scoreSafely(request("Buy fewer tomatoes"), { provider: bad, safety: stubSafety });
+    const out = await scoreSafely(request("Buy fewer tomatoes when raining"), { provider: bad, safety: stubSafety });
     expect(out.status === "ok" && out.fallback).toBe(true);
     expect(JSON.stringify(out)).not.toContain("naked");
     expect(listFlags()[0]).toMatchObject({ stage: "feedback", excerpt: "" });
@@ -39,7 +39,15 @@ describe("scoreSafely", () => {
 
   it("fails closed when screening is down", async () => {
     const down: ContentSafety = { checkText: async () => { throw new Error("503"); }, checkImage: async () => { throw new Error("503"); } };
-    await expect(scoreSafely(request("hi"), { provider: mockProvider, safety: down })).rejects.toThrow("503");
+    await expect(scoreSafely(request("Buy fewer tomatoes when it rains"), { provider: mockProvider, safety: down })).rejects.toThrow("503");
+  });
+
+  it("asks for more on answers under four words, without calling the model or the screen", async () => {
+    const provider = { ...mockProvider, scoreAnswer: vi.fn(mockProvider.scoreAnswer) };
+    const safety = { ...stubSafety, checkText: vi.fn(stubSafety.checkText) };
+    for (const answer of ["ok", "I don't know", "   sell   more  "]) expect(await scoreSafely(request(answer), { provider, safety })).toEqual({ status: "too_short" });
+    expect(provider.scoreAnswer).not.toHaveBeenCalled();
+    expect(safety.checkText).not.toHaveBeenCalled();
   });
 });
 

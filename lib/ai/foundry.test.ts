@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { examplesFor, getRubric, getTemplate, locale } from "../data";
-import { createFoundryProvider, foundryConfigFromEnv } from "./foundry";
+import { createFoundryProvider, foundryConfigFromEnv, localConfigFromEnv } from "./foundry";
+import { getProvider } from "./provider";
 
 // No network: fetch is stubbed, so these tests never call (or pay for) Foundry.
 const config = { baseUrl: "https://res.openai.azure.com/openai/v1", apiKey: "test-key", chatModel: "chat-dep", visionModel: "vision-dep" };
@@ -33,7 +34,20 @@ describe("foundryConfigFromEnv", () => {
   it("names the missing variables and defaults vision to the chat deployment", () => {
     expect(() => foundryConfigFromEnv({})).toThrow(/FOUNDRY_BASE_URL, FOUNDRY_API_KEY, FOUNDRY_CHAT_DEPLOYMENT/);
     const c = foundryConfigFromEnv({ FOUNDRY_BASE_URL: "https://x/openai/v1/", FOUNDRY_API_KEY: "k", FOUNDRY_CHAT_DEPLOYMENT: "d" });
-    expect(c).toEqual({ baseUrl: "https://x/openai/v1", apiKey: "k", chatModel: "d", visionModel: "d" });
+    expect(c).toMatchObject({ baseUrl: "https://x/openai/v1", apiKey: "k", chatModel: "d", visionModel: "d" });
+  });
+
+  it("defaults the local model to Ollama on this machine", () => {
+    expect(localConfigFromEnv({})).toMatchObject({ baseUrl: "http://localhost:11434/v1", chatModel: "gemma3:4b", visionModel: "gemma3:4b", timeoutMs: 90_000 });
+    expect(() => getProvider("nope")).toThrow(/mock", "local" or "foundry/);
+  });
+
+  it("names an unreachable model without retrying", async () => {
+    const fetchMock = vi.fn(async () => { throw new TypeError("fetch failed"); });
+    vi.stubGlobal("fetch", fetchMock);
+    const local = createFoundryProvider(localConfigFromEnv({}));
+    await expect(local.generateChallenge(template, locale, "en", 0)).rejects.toThrow("Local model could not be reached at http://localhost:11434/v1");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 });
 
