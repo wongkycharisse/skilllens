@@ -48,11 +48,12 @@ const en = {
   tooShort: "Add a little more: what should they do, and why?",
   characters: "characters",
   nextSteps: "Next steps on Yoma",
-  nextStepsIntro: "Opportunities that use the skills you just practised:",
+  nextStepsIntro: "Jobs and courses on Yoma linked to this course:",
   nextStepsSnapshot: "Saved list: Yoma could not be reached just now.",
   tryAnother: "Try another challenge",
   speakError: "We could not hear you. Check the microphone, or type your answer.",
   resumed: "We kept your answer from last time.",
+  effortStrength: "You tried the challenge and wrote in your own words.",
 };
 
 const pcm: typeof en = {
@@ -101,11 +102,12 @@ const pcm: typeof en = {
   tooShort: "Add small more: wetin dem suppose do, and why?",
   characters: "letters",
   nextSteps: "Next steps for Yoma",
-  nextStepsIntro: "Opportunities wey use the skills wey you just practise:",
+  nextStepsIntro: "Jobs and courses for Yoma wey connect to this course:",
   nextStepsSnapshot: "Saved list: we no fit reach Yoma now.",
   tryAnother: "Try another challenge",
   speakError: "We no hear you. Check the microphone, or type your answer.",
   resumed: "We keep your answer from last time.",
+  effortStrength: "You try the challenge and you write am with your own words.",
 };
 
 const dictionaries: Record<Lang, typeof en> = { en, pcm };

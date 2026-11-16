@@ -49,14 +49,16 @@ export async function fetchOpportunities(courseId: string, baseUrl: string, fetc
     if (!res.ok) throw new Error(`Yoma opportunity search failed with status ${res.status}`);
     const { items } = z.object({ items: z.array(RawItem) }).parse(await res.json());
     for (const i of items) {
-      if (seen.has(i.id) || exclude.test(i.title)) continue;
+      if (seen.has(i.id) || exclude.test(i.title) || search.excludeTypes.includes(i.type ?? "")) continue;
       const url = i.yomaInfoURL ?? `${baseUrl.replace(/\/api\/v3$/, "").replace("v3api.", "")}/opportunities/${i.id}`;
       const parsed = Opportunity.safeParse({ id: i.id, title: i.title, type: i.type ?? "Opportunity", organization: i.organizationName ?? "", url });
       if (parsed.success) seen.set(i.id, parsed.data);
     }
-    if (seen.size >= LIMIT) break;
+    if (seen.size >= LIMIT * 3) break; // a few spare, so Nigeria-first ranking has something to choose from
   }
-  return [...seen.values()].slice(0, LIMIT);
+  // Learners are in Nigeria (the pilot locale): opportunities that mention it first, otherwise Yoma's order.
+  const local = (o: Opportunity) => (`${o.title} ${o.organization}`.includes(search.preferCountry) ? 0 : 1);
+  return [...seen.values()].sort((x, y) => local(x) - local(y)).slice(0, LIMIT);
 }
 
 const cache = new Map<string, { at: number; list: OpportunityList }>();

@@ -37,6 +37,13 @@ describe("scoreSafely", () => {
     expect(listFlags()[0]).toMatchObject({ stage: "feedback", excerpt: "" });
   });
 
+  it("drops model praise for ideas the answer never contains", async () => {
+    const inventive = { ...mockProvider, scoreAnswer: async () => ({ scores: { cause: 2, action: 1, numbers: 1 }, strengths: [{ criterionId: "cause", text: "You mentioned the ingredients cost more." }], suggestion: { criterionId: "numbers", text: "Answer the question." } }) };
+    const out = await scoreSafely(request("I like football and jollof rice on Sundays"), { provider: inventive, safety: stubSafety });
+    expect(out.status === "ok" && out.ungrounded).toBe(1);
+    expect(out.status === "ok" && out.feedback.strengths[0].text).toBe("You tried the challenge and wrote in your own words.");
+  });
+
   it("fails closed when screening is down", async () => {
     const down: ContentSafety = { checkText: async () => { throw new Error("503"); }, checkImage: async () => { throw new Error("503"); } };
     await expect(scoreSafely(request("Buy fewer tomatoes when it rains"), { provider: mockProvider, safety: down })).rejects.toThrow("503");

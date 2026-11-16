@@ -13,7 +13,7 @@ describe("Yoma opportunities", () => {
     ];
     const fetchMock = vi.fn(async () => Response.json({ items: pages.shift() ?? [], totalCount: 0 }));
     const list = await fetchOpportunities("job-readiness", "https://v3api.stage.yoma.world/api/v3", fetchMock as unknown as typeof fetch);
-    expect(list.map((o) => o.id)).toEqual(["1", "4", "5", "6"]);
+    expect(list.map((o) => o.id)).toEqual(["1", "4", "5", "6"]); // "Lagos" does not say Nigeria, so Yoma order holds
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe("https://v3api.stage.yoma.world/api/v3/opportunity/search");
     expect(JSON.parse(init.body as string)).toMatchObject({ pageNumber: 1, valueContains: "work readiness" });

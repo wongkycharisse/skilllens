@@ -3,6 +3,7 @@
 import { aiConfig, getProvider, type AIProvider } from "./ai/provider";
 import { mockProvider } from "./ai/mock";
 import { getSafety, type ContentSafety, type SafetyResult } from "./safety/contentSafety";
+import { groundStrengths } from "./safety/grounding";
 import { redactPii, type PiiKind } from "./safety/pii";
 import type { Challenge, Feedback, Lang, Locale, Rubric, Sample, Template } from "./schema";
 import { addFlag } from "./store";
@@ -25,6 +26,8 @@ export type ScoreOutcome =
       redacted: PiiKind[];
       /** True when the model's feedback was flagged and replaced with the educator-written rubric text. */
       fallback: boolean;
+      /** "Did well" items dropped because they praised something the answer never said. */
+      ungrounded: number;
     }
   | Flagged
   /** Too short to give useful feedback on: no model call, the learner is asked to add more. */
@@ -58,11 +61,15 @@ export async function scoreSafely(req: ScoreRequest, deps: Deps = defaultDeps())
   const scoreInput = { ...req, answer };
   const feedback = await deps.provider.scoreAnswer(scoreInput);
   const output = await deps.safety.checkText(feedbackText(feedback));
-  if (!output.flagged) return { status: "ok", feedback, answer, redacted: found, fallback: false };
+  if (!output.flagged) {
+    // Only model-written praise is checked: the mock's strengths are educator-written rubric lines, not claims about the answer.
+    const grounded = deps.provider === mockProvider ? { feedback, dropped: 0 } : groundStrengths(feedback, answer, req.lang);
+    return { status: "ok", feedback: grounded.feedback, answer, redacted: found, fallback: false, ungrounded: grounded.dropped };
+  }
 
   // Never show flagged model output. The mock provider uses only educator-written rubric text, so it is a safe stand-in.
   addFlag({ ...context, stage: "feedback", categories: output.categories, excerpt: "" });
-  return { status: "ok", feedback: await mockProvider.scoreAnswer(scoreInput), answer, redacted: found, fallback: true };
+  return { status: "ok", feedback: await mockProvider.scoreAnswer(scoreInput), answer, redacted: found, fallback: true, ungrounded: 0 };
 }
 
 export async function challengeSafely(template: Template, locale: Locale, lang: Lang, seed: number, deps: Deps = defaultDeps()): Promise<Challenge> {

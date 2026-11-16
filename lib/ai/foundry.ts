@@ -46,7 +46,10 @@ export function localConfigFromEnv(env: Record<string, string | undefined> = pro
 }
 
 const LANGUAGE_NAMES: Record<Lang, string> = { en: "simple English", pcm: "Nigerian Pidgin" };
-const ATTEMPTS = 2; // one retry for invalid JSON, a rate limit (429) or a server error (5xx)
+// Up to two retries for invalid JSON, a rate limit (429) or a server error (5xx). Each retry runs warmer: at temperature 0
+// a small model can loop on one token ("token repeat limit reached") and would loop the same way again.
+const TEMPERATURE_LADDER = [0, 0.3, 0.6];
+const ATTEMPTS = TEMPERATURE_LADDER.length;
 
 type Message = { role: "system" | "user"; content: string | unknown[] };
 
@@ -65,7 +68,7 @@ export async function chatJson<T>(
       res = await fetch(`${config.baseUrl}/chat/completions`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "api-key": config.apiKey },
-        body: JSON.stringify({ model, messages, temperature, response_format: { type: "json_object" } }),
+        body: JSON.stringify({ model, messages, temperature: Math.max(temperature, TEMPERATURE_LADDER.at(attempt)!), response_format: { type: "json_object" } }),
         signal: AbortSignal.timeout(config.timeoutMs ?? 30_000),
       });
     } catch (e) {
@@ -74,7 +77,9 @@ export async function chatJson<T>(
       throw new Error(`${label} ${why} at ${config.baseUrl}`);
     }
     if (!res.ok) {
-      lastError = new Error(`${label} request failed with status ${res.status}`);
+      // The provider's own error text (never the learner's) helps diagnose, e.g. "token repeat limit reached".
+      const reason = await res.json().then((j) => j?.error?.message, () => undefined).catch(() => undefined);
+      lastError = new Error(`${label} request failed with status ${res.status}${typeof reason === "string" ? `: ${reason.slice(0, 120)}` : ""}`);
       // Rate limits and server errors are worth one more try; anything else (bad key, bad deployment) is not.
       if ((res.status === 429 || res.status >= 500) && attempt < ATTEMPTS - 1) {
         await new Promise((r) => setTimeout(r, Math.min(Number(res.headers.get("retry-after")) * 1000 || 1000, 5000)));

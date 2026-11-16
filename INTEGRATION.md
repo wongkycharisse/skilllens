@@ -82,13 +82,18 @@ The header is `Authorization: Bearer <learner's Yoma access token>`. The host pa
 
 ### Skills
 
-`data/yoma/skill-map.json` (editable by educators) maps each rubric criterion to Yoma skill names. `npm run yoma:skills` resolves them through Yoma's public `GET /api/v3/lookup/skill` and caches the ids in `data/yoma/skills.json`. The app reads only the cache, so it never depends on Yoma being up. On the server, `POST /api/yoma` replaces any skills sent by the browser with its own mapping.
+`data/yoma/skill-map.json` (editable by educators) maps each rubric criterion to Yoma skill names. `npm run yoma:sync` resolves them through Yoma's public `GET /api/v3/lookup/skill` and caches the ids in `data/yoma/skills.json`. The app reads only the cache, so it never depends on Yoma being up. On the server, `POST /api/yoma` replaces any skills sent by the browser with its own mapping.
+
+### Opportunities ("Next steps on Yoma")
+
+After saving, the learner sees up to four Yoma opportunities from the public, anonymous `POST /api/v3/opportunity/search` (`valueContains` per course keyword in `data/yoma/opportunity-search.json`, stage test data filtered out, cached for an hour). If Yoma cannot be reached, the saved snapshot in `data/yoma/opportunities-snapshot.json` is shown and labelled. `npm run yoma:sync` refreshes the snapshot. Yoma's search has no skills filter (`OpportunitySearchFilterBase` filters by type, category, language, country, organisation and text), so results are matched by keywords, not by the practised skills.
 
 ### Open questions for the Yoma team
 
 1. Should practice samples be a separate opportunity type, so they never look like a completed course? Route A puts them through normal verification, and an org admin approves them.
 2. Would Yoma add a partner endpoint for this, so P2E does not need to hold the learner's Yoma token?
-3. Should a practice sample issue an SSI credential? We assume no ("not a certification"), so keep `CredentialIssuanceEnabled` off on these opportunities.
+3. Could the public opportunity search accept a `skills` filter, so "Next steps" match the skills a learner practised?
+4. Should a practice sample issue an SSI credential? We assume no ("not a certification"), so keep `CredentialIssuanceEnabled` off on these opportunities.
 
 ## 4. Safety and data handling (for UNICEF review)
 
