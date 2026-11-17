@@ -7,6 +7,8 @@ An optional 10-minute AI "level-up" challenge shown at the end of a Passport to 
 - Development progress, test results and next sprint: **[docs/PROGRESS.md](docs/PROGRESS.md)**
 - For P2E and Yoma engineers: **[INTEGRATION.md](INTEGRATION.md)**
 
+**Live demo:** https://skilllens-gamma.vercel.app/demo/p2e (status: https://skilllens-gamma.vercel.app/status). It runs simulated AI and safety, because no Azure keys are set there. For real AI, run it locally with Ollama (below).
+
 ## Quick start
 
 Needs Node 24 (`.nvmrc`) and git.
