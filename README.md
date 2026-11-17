@@ -13,6 +13,8 @@ An optional 10-minute AI "level-up" challenge shown at the end of a Passport to 
 
 Needs Node 24 (`.nvmrc`) and git.
 
+This repository is private: ask the owner for access, or use the public copy in the `skilllens/` folder of [Devin-Fitzpatrick06/yoma#1](https://github.com/Devin-Fitzpatrick06/yoma/pull/1) (`cd skilllens` there, then the same steps). The sample data the app needs is in the repo (`data/synthetic`, `data/yoma`), so there is nothing to download. What connects to Yoma, and what a live GenU environment needs: [INTEGRATION.md](INTEGRATION.md) sections 6 and 7.
+
 ```bash
 git clone https://github.com/wongkycharisse/skilllens.git
 cd skilllens
