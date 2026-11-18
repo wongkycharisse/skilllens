@@ -82,8 +82,20 @@ export async function scoreSafely(req: ScoreRequest, deps: Deps = defaultDeps())
     return { status: "flagged", categories: input.categories };
   }
 
-  const scoreInput = { ...req, answer };
-  const feedback = checkAgainstAnswer(await deps.provider.scoreAnswer(scoreInput), req, answer);
+  // The Level 1 answer comes back from the browser, so it gets the same stripping and screening as the new answer.
+  let previous = req.previous;
+  if (previous) {
+    const prior = redactPii(previous.answer).text;
+    const check = await deps.safety.checkText(prior);
+    if (check.flagged) {
+      addFlag({ ...context, stage: "answer", categories: check.categories, excerpt: prior });
+      return { status: "flagged", categories: check.categories };
+    }
+    previous = { ...previous, answer: prior };
+  }
+
+  const scoreInput = { ...req, answer, previous };
+  const feedback = checkAgainstAnswer(await deps.provider.scoreAnswer(scoreInput), scoreInput, answer);
   const output = await deps.safety.checkText(feedbackText(feedback));
   if (!output.flagged) {
     // Only model-written praise is checked: the mock's strengths are educator-written rubric lines, not claims about the answer.

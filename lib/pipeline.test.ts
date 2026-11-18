@@ -108,3 +108,22 @@ describe("checkAgainstAnswer", () => {
     expect(out.suggestion.criterionId).toBe("action");
   });
 });
+
+describe("scoreSafely with a Level 1 attempt", () => {
+  it("strips personal details from the previous answer and screens it before the model sees it", async () => {
+    const { scoreSafely } = await import("./pipeline");
+    const data = await import("./data");
+    const template = data.getTemplate("fl-rainy-sales");
+    const rubric = data.getRubric(template.rubricId);
+    const challenge = await mockProvider.generateChallenge(template, data.locale, "en", 0);
+    let seen = "";
+    const spy = { ...mockProvider, scoreAnswer: async (i: Parameters<typeof mockProvider.scoreAnswer>[0]) => { seen = i.previous?.answer ?? ""; return mockProvider.scoreAnswer(i); } };
+    const safe = { checkText: async (t: string) => ({ flagged: /end my life/i.test(t), categories: [] }), checkImage: async () => ({ flagged: false, categories: [] }) };
+    const req = { challenge, rubric, examples: [], answer: "Amina should buy fewer tomatoes when rain is forecast.", lang: "en" as const };
+    const levels = { cause: 1, tools: 1, numbers: 1, action: 1 };
+    await scoreSafely({ ...req, previous: { answer: "Call me on 08012345678 about the tomatoes.", levels, suggestionCriterionId: "cause" } }, { provider: spy, safety: safe });
+    expect(seen).not.toContain("08012345678");
+    const out = await scoreSafely({ ...req, previous: { answer: "I want to end my life.", levels, suggestionCriterionId: "cause" } }, { provider: spy, safety: safe });
+    expect(out.status).toBe("flagged");
+  });
+});
