@@ -46,6 +46,8 @@ const en = {
   offline: "You are offline. Your answer is kept on this phone. Send it when you are back online.",
   stillWorking: "Still working. On a slow connection this can take up to a minute.",
   tooShort: "Add a little more: what should they do, and why?",
+  clarifyTitle: "Let's make the question clearer",
+  clarifyBody: "That is fine. Nothing was marked. Here is a way to start:",
   characters: "characters",
   nextSteps: "Next steps on Yoma",
   nextStepsIntro: "Jobs and courses on Yoma linked to this course:",
@@ -68,6 +70,7 @@ const en = {
   progressSome: "Better than your first answer in",
   progressNone: "No change from your first answer yet. Try the tip below.",
   fromLesson: "From the lesson",
+  remember: "Remember from the lesson",
   goFurther: "To go further:",
   allStrong: "Strong on every part. Try a new challenge to keep practising.",
 };
@@ -116,6 +119,8 @@ const pcm: typeof en = {
   offline: "Network no dey. We keep your answer for this phone. Send am when network come back.",
   stillWorking: "We still dey work on am. If network slow, e fit take one minute.",
   tooShort: "Add small more: wetin dem suppose do, and why?",
+  clarifyTitle: "Make we explain the question well",
+  clarifyBody: "No wahala. We no mark anything. See how you fit start:",
   characters: "letters",
   nextSteps: "Next steps for Yoma",
   nextStepsIntro: "Jobs and courses for Yoma wey connect to this course:",
@@ -138,6 +143,7 @@ const pcm: typeof en = {
   progressSome: "E better pass your first answer for",
   progressNone: "No change from your first answer yet. Try the tip wey dey below.",
   fromLesson: "From the lesson",
+  remember: "Remember wetin the lesson teach",
   goFurther: "To go far pass:",
   allStrong: "E strong for every part. Try another challenge make you continue practice.",
 };

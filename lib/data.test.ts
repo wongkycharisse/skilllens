@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { courses, examplesFor, getRubric, locale, samples, templates, templatesFor } from "./data";
+import { courses, examplesFor, getRubric, getTemplate, locale, rubricFor, samples, templates, templatesFor } from "./data";
 import { fillTemplate, slotValues, templateSlots } from "./template";
 
 describe("synthetic seed data", () => {
@@ -37,6 +37,39 @@ describe("synthetic seed data", () => {
       expect(examplesFor(t.id)).toHaveLength(10);
       for (const s of mine) expect(Object.keys(s.scores).sort()).toEqual(criteria);
     }
+  });
+});
+
+describe("challenges give learners what they need", () => {
+  it("every challenge has a lesson recap, a way to start and its own course tools, filled for every seed", () => {
+    for (const t of templates) {
+      expect(t.recap && t.help && t.tools, t.id).toBeTruthy();
+      for (const lang of ["en", "pcm"] as const)
+        for (let seed = 0; seed < 5; seed++) {
+          expect(fillTemplate(t.recap![lang], slotValues(locale, seed))).not.toMatch(/[{}]/);
+          expect(fillTemplate(t.help![lang], slotValues(locale, seed))).not.toMatch(/[{}]/);
+        }
+    }
+  });
+
+  it("the profit challenge gives the price and both costs, and every snack still makes a profit", () => {
+    const t = getTemplate("fl-ingredient-costs");
+    const naira = (v: string) => Number(v.replace(/[^\d]/g, ""));
+    for (let seed = 0; seed < 5; seed++) {
+      const v = slotValues(locale, seed);
+      const text = fillTemplate(t.text.en, v);
+      for (const slot of ["snackPrice", "snackCostBefore", "snackCost"]) expect(text).toContain(v[slot]);
+      expect(naira(v.snackCostBefore)).toBeLessThan(naira(v.snackCost));
+      expect(naira(v.snackCost)).toBeLessThan(naira(v.snackPrice));
+    }
+  });
+
+  it("the course-tools tip names the tools of this challenge, not another lesson's", () => {
+    const tip = (id: string) => rubricFor(getTemplate(id)).criteria.find((c) => c.kind === "concepts")!;
+    expect(tip("fl-ingredient-costs").improve.en).toContain("profit per item");
+    expect(tip("fl-ingredient-costs").improve.en).not.toMatch(/50:30:20|budget/);
+    expect(tip("fl-ingredient-costs").keywords).toContain("profit");
+    expect(tip("jr-fee-scam").levels[2].pcm).not.toContain("{tools}");
   });
 });
 

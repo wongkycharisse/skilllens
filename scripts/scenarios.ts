@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { POST as feedbackRoute } from "../app/api/feedback/route";
 import { POST as challengeRoute } from "../app/api/challenge/route";
 import { POST as transcribeRoute } from "../app/api/transcribe/route";
-import { examplesFor, getRubric, getTemplate, locale } from "../lib/data";
+import { examplesFor, getTemplate, locale, rubricFor } from "../lib/data";
 import { defaultDeps, scoreSafely, type ScoreOutcome } from "../lib/pipeline";
 import type { Lang } from "../lib/schema";
 import { slotValues, fillTemplate } from "../lib/template";
@@ -27,7 +27,7 @@ const sum = (o: ScoreOutcome) => (o.status === "ok" ? Object.values(o.feedback.s
 function score(templateId: string, answer: string, lang: Lang = "en") {
   const t = getTemplate(templateId);
   const challenge = { templateId, courseId: t.courseId, rubricId: t.rubricId, lang, values, text: fillTemplate(t.text[lang], values) };
-  return scoreSafely({ challenge, rubric: getRubric(t.rubricId), examples: examplesFor(templateId), answer, lang }, defaultDeps());
+  return scoreSafely({ challenge, rubric: rubricFor(t), examples: examplesFor(templateId), answer, lang }, defaultDeps());
 }
 
 const okWithFeedback = (o: ScoreOutcome): Check =>

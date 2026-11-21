@@ -13,10 +13,11 @@ interface Challenge {
   values: Record<string, string>;
   text: string;
   lesson?: string | null;
+  recap?: string | null;
 }
 
 type OkFeedback = { status: "ok"; answer: string; redacted: string[]; skills: YomaSkill[] } & LearnerFeedback;
-type FeedbackResponse = OkFeedback | { status: "flagged" } | { status: "too_short" };
+type FeedbackResponse = OkFeedback | { status: "flagged" } | { status: "too_short" } | { status: "confused"; help: string | null; recap: string | null };
 type YomaResponse = { status: "ok"; mode: "mock" | "live" } | { status: "flagged" };
 interface Opportunity {
   id: string;
@@ -169,7 +170,8 @@ export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: st
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState<OkFeedback | null>(null);
   const [first, setFirst] = useState<{ answer: string; feedback: OkFeedback } | null>(null);
-  const [notice, setNotice] = useState<"flagged" | "too_short" | "resumed" | null>(null);
+  const [notice, setNotice] = useState<"flagged" | "too_short" | "resumed" | "confused" | null>(null);
+  const [help, setHelp] = useState<string | null>(null);
   const [saved, setSaved] = useState<PracticeSample | null>(null);
   const [yoma, setYoma] = useState<"idle" | "sending" | "sent" | "demo">("idle");
   const [busy, setBusy] = useState(false);
@@ -241,6 +243,12 @@ export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: st
         : undefined;
       const { templateId, lang: l, values } = challenge!;
       const res = await post<FeedbackResponse>("/api/feedback", { templateId, lang: l, values, answer, previous });
+      if (res.status === "confused") {
+        // Nothing was scored: explain the question and let the learner start again, on the same level.
+        setHelp(res.help ?? res.recap);
+        setAnswer("");
+        return setNotice("confused");
+      }
       if (res.status !== "ok") return setNotice(res.status);
       setNotice(null);
       setFeedback(res);
@@ -297,6 +305,12 @@ export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: st
       <h2 id="scenario" className="text-sm uppercase tracking-wider text-brand">{t(lang, "yourChallenge")}</h2>
       <p className="mt-1 text-lg">{challenge.text}</p>
       {challenge.lesson && <p className="mt-2 text-sm text-brand"><span className="font-medium">{t(lang, "fromLesson")}:</span> {challenge.lesson}</p>}
+      {challenge.recap && (
+        <div className="mt-3 rounded-2xl bg-white/70 p-3">
+          <h3 className="text-sm font-medium text-brand">{t(lang, "remember")}</h3>
+          <p className="mt-1">{challenge.recap}</p>
+        </div>
+      )}
     </section>
   );
 
@@ -354,13 +368,20 @@ export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: st
           )}
           {notice === "resumed" && <p role="status" className="card text-sm">{t(lang, "resumed")}</p>}
           {notice === "too_short" && <p role="alert" className="card-yellow flex gap-2"><Icon name="info" className="size-5 text-brand" />{t(lang, "tooShort")}</p>}
+          {notice === "confused" && (
+            <section role="alert" aria-labelledby="clarify" className="card-brand">
+              <h3 id="clarify" className="flex items-center gap-2 text-lg text-brand"><Icon name="info" className="size-5" />{t(lang, "clarifyTitle")}</h3>
+              <p className="mt-1">{t(lang, "clarifyBody")}</p>
+              {help && <p className="mt-2 font-medium">{help}</p>}
+            </section>
+          )}
           {notice === "flagged" && (
             <section role="alert" aria-labelledby="safety" className="card-alert">
               <h3 id="safety" className="flex items-center gap-2 text-lg text-coral"><Icon name="alert" className="size-5" />{t(lang, "safetyTitle")}</h3>
               <p className="mt-1">{t(lang, "safetyBody")}</p>
             </section>
           )}
-          <AnswerInput lang={lang} value={answer} onChange={(v) => { setAnswer(v); if (notice !== "resumed") setNotice(null); }} />
+          <AnswerInput lang={lang} value={answer} onChange={(v) => { setAnswer(v); if (notice !== "resumed" && notice !== "confused") setNotice(null); }} />
           <button type="button" className="btn" disabled={busy || !online || !answer.trim()} onClick={getFeedback}>
             {!busy && <Icon name="arrow" />}{busy ? t(lang, "thinking") : t(lang, "getFeedback")}
           </button>

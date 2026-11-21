@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { badRequest, handle, parseJson } from "../../../lib/api";
-import { examplesFor, getRubric, templates } from "../../../lib/data";
+import { examplesFor, rubricFor, templates } from "../../../lib/data";
 import { scoreSafely } from "../../../lib/pipeline";
 import { Lang, PreviousAttempt, SlotValues } from "../../../lib/schema";
 import { fillTemplate } from "../../../lib/template";
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
   }
 
   return handle("feedback", async () => {
-    const rubric = getRubric(template.rubricId);
+    const rubric = rubricFor(template);
     const outcome = await scoreSafely({
       challenge: { templateId, courseId: template.courseId, rubricId: template.rubricId, lang, values, text },
       rubric,
@@ -40,6 +40,11 @@ export async function POST(req: Request) {
       lang,
       previous,
     });
+    if (outcome.status === "confused") {
+      // Explain the question instead of scoring: the steps to start, and the lesson facts it needs.
+      const fill = (l?: { en: string; pcm: string }) => (l ? fillTemplate(l[lang], values) : null);
+      return Response.json({ status: "confused", help: fill(template.help), recap: fill(template.recap) });
+    }
     if (outcome.status !== "ok") return Response.json({ status: outcome.status });
     // No total and no numbers on screen: each criterion is shown as a level in words, with what the next level looks like.
     const { strengths, suggestion, scores } = outcome.feedback;

@@ -1,5 +1,5 @@
 {
-  "note": "SYNTHETIC PLACEHOLDER rubrics, built from the public P2E lesson lists (global.passport2earning.org, read 18 Nov 2026: Khan Academy Financial Literacy 101, Microsoft Business 101 Budgeting, How to get a Job, UNICEF Communication Skills). Educators: replace with approved rubrics (3-4 criteria, levels 1-4). Learners see the level descriptors in words, never a number. 'kind' tells lib/evidence.ts how to read an answer; 'keywords' are the course's own terms. Pidgin text needs native-speaker review.",
+  "note": "SYNTHETIC PLACEHOLDER rubrics, built from the public P2E lesson lists (global.passport2earning.org, read 18 Nov 2026: Khan Academy Financial Literacy 101, Microsoft Business 101 Budgeting, How to get a Job, UNICEF Communication Skills). Educators: replace with approved rubrics (3-4 criteria, levels 1-4). Learners see the level descriptors in words, never a number. 'kind' tells lib/evidence.ts how to read an answer; 'keywords' are the course's own terms; for kind 'concepts', each challenge template supplies its own keywords and fills {tools}, so the tip fits the question. Pidgin text needs native-speaker review.",
   "items": [
     {
       "id": "fl-rubric",
@@ -26,11 +26,11 @@
           "levels": [
             { "en": "No idea from the course yet", "pcm": "No idea from the course yet" },
             { "en": "Mentions one course idea", "pcm": "You mention one idea from the course" },
-            { "en": "Uses a course tool, like a budget or the 50:30:20 rule", "pcm": "You use one course tool, like budget or 50:30:20" },
-            { "en": "Uses several course tools together, like a budget, an emergency fund and tracking", "pcm": "You use plenty course tools together, like budget, emergency fund and record" }
+            { "en": "Uses a course tool, like {tools}", "pcm": "You use one course tool, like {tools}" },
+            { "en": "Uses two or more course tools together: {tools}", "pcm": "You use two or more course tools together: {tools}" }
           ],
           "strength": { "en": "You used a tool from the course.", "pcm": "You use tool wey the course teach." },
-          "improve": { "en": "Use a tool from the course by name: a budget, the 50:30:20 rule, paying yourself first or an emergency fund.", "pcm": "Use one course tool by name: budget, 50:30:20, pay yourself first or emergency fund." }
+          "improve": { "en": "Use a tool from the course by name: {tools}.", "pcm": "Use one course tool by name: {tools}." }
         },
         {
           "id": "numbers",
@@ -85,11 +85,11 @@
           "levels": [
             { "en": "No idea from the course yet", "pcm": "No idea from the course yet" },
             { "en": "Mentions one course idea", "pcm": "You mention one idea from the course" },
-            { "en": "Uses a course tool, like the STAR method or active listening", "pcm": "You use one course tool, like STAR or active listening" },
-            { "en": "Uses several course tools together, like research, STAR and a follow-up", "pcm": "You use plenty course tools together, like research, STAR and follow-up" }
+            { "en": "Uses a course tool, like {tools}", "pcm": "You use one course tool, like {tools}" },
+            { "en": "Uses two or more course tools together: {tools}", "pcm": "You use two or more course tools together: {tools}" }
           ],
           "strength": { "en": "You used a tool from the course.", "pcm": "You use tool wey the course teach." },
-          "improve": { "en": "Use a tool from the course by name: the STAR method, active listening, a professional email or checking the employer.", "pcm": "Use one course tool by name: STAR, active listening, professional email or check the employer." }
+          "improve": { "en": "Use a tool from the course by name: {tools}.", "pcm": "Use one course tool by name: {tools}." }
         },
         {
           "id": "steps",
