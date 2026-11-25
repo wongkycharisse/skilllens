@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { languages, t, type MessageKey } from "../lib/i18n";
 import type { Lang, PracticeSample, YomaSkill } from "../lib/schema";
 import { AnswerInput } from "./AnswerInput";
+import { CredentialHandoff } from "./CredentialHandoff";
 import { FeedbackPanels, RubricPanel, type LearnerFeedback } from "./FeedbackPanels";
 import { Icon } from "./Icon";
 
@@ -427,6 +428,9 @@ export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: st
             </button>
           ) : (
             <p role="status" className="card-brand flex gap-2 font-medium text-brand"><Icon name="check" />{t(lang, yoma === "sent" ? "sentYoma" : "sentYomaDemo")}</p>
+          )}
+          {feedback?.rubric && (
+            <CredentialHandoff lang={lang} rows={feedback.rubric} skills={saved.skills} lesson={challenge?.lesson ?? null} date={new Date(saved.savedAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })} sent={yoma === "sent" || yoma === "demo"} />
           )}
           <NextSteps courseId={courseId} lang={lang} />
           <button type="button" className="btn-secondary" onClick={startOver}><Icon name="retry" /> {t(lang, "tryAnother")}</button>
