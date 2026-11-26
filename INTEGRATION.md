@@ -186,7 +186,7 @@ Paths are in the Yoma repository ([Devin-Fitzpatrick06/yoma](https://github.com/
 | Infrastructure | Rate limiting on `/api/*`, plus logging that holds flag ids only | GenU |
 | Review | Child-safeguarding and data-protection sign-off (section 4), and native-speaker review of the Pidgin text | UNICEF |
 
-## 8. Design (not built): a passed challenge becomes a skill credential in YoID
+## 8. Designed, with a mocked write: a passed challenge becomes a skill credential in YoID
 
 SkillLens never issues the credential. It reports a pass, and Yoma's existing pipeline issues it. Checked in Yoma's code on 25 Nov 2026:
 
@@ -213,4 +213,4 @@ SkillLens never issues the credential. It reports a pass, and Yoma's existing pi
 - Confirm whether the opportunity schema's date of birth and display name may appear on credentials for minors.
 - Agree a manual revocation path, because Partner Sync does not revoke.
 
-**In the prototype:** the end screen preview (`components/CredentialHandoff.tsx`) sends and issues nothing. The full design is in the project's Claude Doc.
+**In the prototype:** with the shared sample learner (Halima), a pass on `chal-001` writes `cred-002` to a mocked YoID record (`lib/yoid.ts`, `POST /api/yoid/credential`), only with a signed one-time pass from the feedback route and after the learner's tap. Nothing reaches Yoma. Without a sample learner, the end screen is a design preview (`components/CredentialHandoff.tsx`). The full design is in the project's Claude Doc.

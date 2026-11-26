@@ -55,7 +55,7 @@ describe("foundry provider", () => {
   it("asks the model for names only; goods and amounts stay from the locale so the sums work", async () => {
     const fetchMock = stubReplies({ values: { name: "Bala" } });
     const c = await provider.generateChallenge(template, locale, "en", 0);
-    expect(c.text).toBe("Bala sells tomatoes in Kano for ₦500 a basket. On a normal day Bala sells 10 baskets, but on a rainy day only 4, and 1 more spoils. How much money does Bala lose on a rainy day, and how can Bala use sales records and an emergency fund to cope?");
+    expect(c.text).toBe("Bala sells tomatoes in Kaduna for ₦500 a basket. On a normal day Bala sells 10 baskets, but on a rainy day only 4, and 1 more spoils. How much money does Bala lose on a rainy day, and how can Bala use sales records and an emergency fund to cope?");
     expect(body(fetchMock).messages[0].content).toContain("Slots to fill: name");
     expect(fetchMock.mock.calls[0][0]).toBe("https://res.openai.azure.com/openai/v1/chat/completions");
     expect(fetchMock.mock.calls[0][1].headers["api-key"]).toBe("test-key");

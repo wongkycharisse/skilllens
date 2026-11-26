@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { languages, t, type MessageKey } from "../lib/i18n";
 import type { Lang, PracticeSample, YomaSkill } from "../lib/schema";
 import { AnswerInput } from "./AnswerInput";
-import { CredentialHandoff } from "./CredentialHandoff";
+import { CredentialHandoff, type SampleLearner } from "./CredentialHandoff";
 import { FeedbackPanels, RubricPanel, type LearnerFeedback } from "./FeedbackPanels";
 import { Icon } from "./Icon";
 
@@ -17,7 +17,7 @@ interface Challenge {
   recap?: string | null;
 }
 
-type OkFeedback = { status: "ok"; answer: string; redacted: string[]; skills: YomaSkill[] } & LearnerFeedback;
+type OkFeedback = { status: "ok"; answer: string; redacted: string[]; skills: YomaSkill[]; passId?: string | null } & LearnerFeedback;
 type FeedbackResponse = OkFeedback | { status: "flagged" } | { status: "too_short" } | { status: "confused"; help: string | null; recap: string | null };
 type YomaResponse = { status: "ok"; mode: "mock" | "live" } | { status: "flagged" };
 interface Opportunity {
@@ -126,7 +126,7 @@ function Rating({ lang, onRate }: { lang: Lang; onRate: (n: number) => void }) {
             key={n}
             type="button"
             aria-label={`${n} / 5`}
-            className="min-h-12 flex-1 rounded-full border-2 border-brand bg-white font-heading text-lg text-brand transition hover:bg-brand-tint"
+            className="min-h-12 flex-1 rounded-full border-2 border-brand bg-paper font-heading text-lg text-brand transition hover:bg-brand-tint"
             onClick={() => { setDone(true); onRate(n); }}
           >
             {n}
@@ -138,7 +138,7 @@ function Rating({ lang, onRate }: { lang: Lang; onRate: (n: number) => void }) {
 }
 
 function NextSteps({ courseId, lang }: { courseId: string; lang: Lang }) {
-  const [list, setList] = useState<{ source: "live" | "snapshot"; items: Opportunity[] } | null>(null);
+  const [list, setList] = useState<{ source: "live" | "snapshot" | "sample"; items: Opportunity[] } | null>(null);
   useEffect(() => {
     fetch(`/api/yoma/opportunities?course=${encodeURIComponent(courseId)}`, { signal: AbortSignal.timeout(20_000) })
       .then((r) => (r.ok ? r.json() : null))
@@ -158,12 +158,12 @@ function NextSteps({ courseId, lang }: { courseId: string; lang: Lang }) {
           </li>
         ))}
       </ul>
-      {list.source === "snapshot" && <p className="text-sm">{t(lang, "nextStepsSnapshot")}</p>}
+      {list.source !== "live" && <p className="text-sm">{t(lang, list.source === "sample" ? "nextStepsSample" : "nextStepsSnapshot")}</p>}
     </section>
   );
 }
 
-export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: string; courseTitle: Record<Lang, string>; initialLang: Lang }) {
+export function SkillLens({ courseId, courseTitle, initialLang, learner = null }: { courseId: string; courseTitle: Record<Lang, string>; initialLang: Lang; learner?: SampleLearner | null }) {
   const [lang, setLang] = useState<Lang>(initialLang);
   const [step, setStep] = useState<Step>("lang");
   const [level, setLevel] = useState<1 | 2>(1);
@@ -200,7 +200,8 @@ export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: st
 
   useEffect(() => {
     if (!restored.current) return;
-    writeDraft(courseId, step === "saved" || !challenge ? null : { lang, step, level, challenge, answer, feedback, first });
+    // The pass token is not kept: a resumed draft could outlive it. The learner can still save the practice sample.
+    writeDraft(courseId, step === "saved" || !challenge ? null : { lang, step, level, challenge, answer, feedback: feedback && { ...feedback, passId: null }, first });
   }, [courseId, lang, step, level, challenge, answer, feedback, first]);
 
   // Move focus to each new screen's heading, so screen-reader and keyboard users know the page changed.
@@ -302,12 +303,12 @@ export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: st
     }, sendToYoma);
 
   const scenarioCard = challenge && (
-    <section aria-labelledby="scenario" className="card-yellow">
+    <section aria-labelledby="scenario" className="card-accent">
       <h2 id="scenario" className="text-sm uppercase tracking-wider text-brand">{t(lang, "yourChallenge")}</h2>
       <p className="mt-1 text-lg">{challenge.text}</p>
       {challenge.lesson && <p className="mt-2 text-sm text-brand"><span className="font-medium">{t(lang, "fromLesson")}:</span> {challenge.lesson}</p>}
       {challenge.recap && (
-        <div className="mt-3 rounded-2xl bg-white/70 p-3">
+        <div className="mt-3 rounded-2xl bg-paper/70 p-3">
           <h3 className="text-sm font-medium text-brand">{t(lang, "remember")}</h3>
           <p className="mt-1">{challenge.recap}</p>
         </div>
@@ -322,6 +323,7 @@ export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: st
 
   return (
     <main className="mx-auto max-w-md space-y-4 p-4 lg:max-w-4xl" lang={lang}>
+      {learner && <p className="card text-sm">{t(lang, "sampleBanner").replace("{name}", learner.displayName)}</p>}
       <header>
         <p className="chip inline-block">{courseTitle[lang]} · {t(lang, "levelUp")}</p>
         {step !== "lang" && step !== "saved" && (
@@ -368,7 +370,7 @@ export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: st
             </section>
           )}
           {notice === "resumed" && <p role="status" className="card text-sm">{t(lang, "resumed")}</p>}
-          {notice === "too_short" && <p role="alert" className="card-yellow flex gap-2"><Icon name="info" className="size-5 text-brand" />{t(lang, "tooShort")}</p>}
+          {notice === "too_short" && <p role="alert" className="card-accent flex gap-2"><Icon name="info" className="size-5 text-brand" />{t(lang, "tooShort")}</p>}
           {notice === "confused" && (
             <section role="alert" aria-labelledby="clarify" className="card-brand">
               <h3 id="clarify" className="flex items-center gap-2 text-lg text-brand"><Icon name="info" className="size-5" />{t(lang, "clarifyTitle")}</h3>
@@ -413,7 +415,7 @@ export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: st
         <section className="space-y-3">
           <span className="grid size-14 place-items-center rounded-full bg-brand-tint text-brand"><Icon name="check" className="size-8" /></span>
           {h1(t(lang, "saved"))}
-          <p className="inline-block rounded-full bg-brand px-3 py-1 text-sm font-medium text-white">{t(lang, "practiceLabel")}</p>
+          <p className="inline-block rounded-full bg-brand px-3 py-1 text-sm font-medium text-paper">{t(lang, "practiceLabel")}</p>
           {scenarioCard}
           <p className="rounded-2xl border-2 border-brand-soft p-4">{saved.answer}</p>
           <section aria-labelledby="skills">
@@ -422,7 +424,7 @@ export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: st
               {saved.skills.map((s) => <li key={s.id} className="chip">{s.name}</li>)}
             </ul>
           </section>
-          {yoma === "idle" || yoma === "sending" ? (
+          {learner && feedback?.passId ? null : yoma === "idle" || yoma === "sending" ? (
             <button type="button" className="btn-secondary" disabled={busy || !online} onClick={sendToYoma}>
               {yoma !== "sending" && <Icon name="arrow" />}{yoma === "sending" ? t(lang, "sendingYoma") : t(lang, "addToYoma")}
             </button>
@@ -430,7 +432,7 @@ export function SkillLens({ courseId, courseTitle, initialLang }: { courseId: st
             <p role="status" className="card-brand flex gap-2 font-medium text-brand"><Icon name="check" />{t(lang, yoma === "sent" ? "sentYoma" : "sentYomaDemo")}</p>
           )}
           {feedback?.rubric && (
-            <CredentialHandoff lang={lang} rows={feedback.rubric} skills={saved.skills} lesson={challenge?.lesson ?? null} date={new Date(saved.savedAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })} sent={yoma === "sent" || yoma === "demo"} />
+            <CredentialHandoff lang={lang} rows={feedback.rubric} skills={saved.skills} lesson={challenge?.lesson ?? null} date={new Date(saved.savedAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })} sent={yoma === "sent" || yoma === "demo"} learner={learner} passId={feedback.passId ?? null} onRecorded={(thread) => window.parent.postMessage({ type: "skilllens:yoid", thread }, HOST_ORIGIN)} />
           )}
           <NextSteps courseId={courseId} lang={lang} />
           <button type="button" className="btn-secondary" onClick={startOver}><Icon name="retry" /> {t(lang, "tryAnother")}</button>

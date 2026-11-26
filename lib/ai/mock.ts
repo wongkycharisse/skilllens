@@ -38,6 +38,7 @@ export const mockProvider: AIProvider = {
   },
 
   async transcribePhoto() {
-    return "[Mock transcription] Amina should buy fewer tomatoes when rain is forecast and sell to regular customers on WhatsApp.";
+    // No vision model in simulated mode, so nothing is read from the photo: say so, and let the learner type their notes.
+    return "[Mock transcription: simulated mode cannot read photos. Type what your notes say here.]";
   },
 };

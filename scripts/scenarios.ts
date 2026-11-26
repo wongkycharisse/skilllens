@@ -12,6 +12,8 @@ import { defaultDeps, scoreSafely, type ScoreOutcome } from "../lib/pipeline";
 import type { Lang } from "../lib/schema";
 import { slotValues, fillTemplate } from "../lib/template";
 import { opportunitiesFor } from "../lib/yoma/opportunities";
+import { learner } from "../lib/shared";
+import { issueCredential, registerPass } from "../lib/yoid";
 
 type Check = { pass: boolean; note: string };
 interface Scenario {
@@ -72,6 +74,18 @@ const scenarios: Scenario[] = [
       const l1 = await score("fl-rainy-sales", "She should sell her tomatoes somewhere else when it rains.");
       const l2 = await score("fl-rainy-sales", "Rain stops customers coming, so tomatoes spoil and she loses money. She should buy only 5 baskets on rainy days instead of 10, saving ₦2,500, and sell to regular customers on WhatsApp.");
       return { pass: sum(l2) >= sum(l1), note: `internal score total L1 ${sum(l1)} -> L2 ${sum(l2)} (never shown to learners)` };
+    },
+  },
+  {
+    id: "R6", group: "Realistic answers", what: "Halima's journey (shared mock data): chal-001 attempt 1 is not yet a pass; attempt 2 passes and records cred-002 on her YoID",
+    run: async () => {
+      const ok = (o: ScoreOutcome) => o.status === "ok" && Object.values(o.feedback.scores).every((v) => v >= 3);
+      const l1 = await score("chal-001", "First I would check the cables are tight. Then I would look at the battery. Then the light itself.");
+      const l2 = await score("chal-001", "First I would switch it off and check the connections, because a loose or rusty cable stops power reaching the battery. Then I would test the panel output with a multimeter in full sun, because a dirty or shaded panel makes too little voltage. Finally I would test the battery voltage, because an old battery cannot hold the charge.");
+      const pass = l2.status === "ok" ? registerPass("chal-001", l2.feedback.scores) : null;
+      const out = pass ? issueCredential(learner.yoidId, pass) : { error: "no pass" };
+      const id = "credential" in out ? out.credential.id : out.error;
+      return { pass: !ok(l1) && ok(l2) && id === "cred-002", note: `attempt 1 ${ok(l1) ? "passed" : "not yet"}, attempt 2 ${ok(l2) ? "passed" : "not yet"}, YoID: ${id}` };
     },
   },
   {

@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { courses, examplesFor, getRubric, getTemplate, locale, rubricFor, samples, templates, templatesFor } from "./data";
+import { challenge, credential, learner, opportunity, plan } from "./shared";
 import { fillTemplate, slotValues, templateSlots } from "./template";
 
 describe("synthetic seed data", () => {
-  it("has 2 courses with 4-6 templates each, each using its course's rubric", () => {
-    expect(courses).toHaveLength(2);
+  it("has 3 courses with 1-6 templates each (the shared course has exactly the one shared challenge), each using its course's rubric", () => {
+    expect(courses).toHaveLength(3);
     for (const course of courses) {
       const list = templatesFor(course.id);
-      expect(list.length).toBeGreaterThanOrEqual(4);
+      expect(list.length).toBeGreaterThanOrEqual(1);
       expect(list.length).toBeLessThanOrEqual(6);
       for (const t of list) expect(getRubric(t.rubricId).courseId).toBe(course.id);
     }
@@ -79,9 +80,26 @@ describe("fillTemplate", () => {
   });
 });
 
-describe("P2E course order", () => {
-  it("is 1 Financial Literacy, then 2 Job Readiness", () => {
-    expect(courses.map((c) => c.id)).toEqual(["financial-literacy", "job-readiness"]);
-    expect(courses.map((c) => c.title.en)).toEqual(["Financial Literacy", "Job Readiness"]);
+describe("course order", () => {
+  it("opens on the shared journey's course, then the two other sample courses", () => {
+    expect(courses.map((c) => c.id)).toEqual(["solar-pv", "financial-literacy", "job-readiness"]);
+    expect(courses[0].title.en).toBe(opportunity("opp-course-001")!.title);
+  });
+});
+
+describe("BBS x GenU shared mock data", () => {
+  it("uses the shared challenge word for word, after the shared course", () => {
+    const t = getTemplate(challenge.id);
+    expect(t.text.en).toBe(challenge.task);
+    expect(t.courseId).toBe("solar-pv");
+    expect(challenge.afterCourse).toBe("opp-course-001");
+    expect(challenge.issues).toBe("cred-002");
+  });
+
+  it("has the shared learner, plan and credential with the ids every prototype uses", () => {
+    expect(learner).toMatchObject({ id: "yp-001", yoidId: "yoid-ng-7f3a0123", displayName: "Halima Y." });
+    expect(plan.id).toBe("plan-001");
+    expect(plan.target).toBe("opp-job-001");
+    expect(credential("cred-002")?.skills).toEqual(["solar-install"]);
   });
 });

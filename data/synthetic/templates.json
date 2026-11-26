@@ -1,5 +1,5 @@
 {
-  "note": "SYNTHETIC PLACEHOLDER challenge templates, each tied to a lesson in the public P2E course lists (global.passport2earning.org, read 18 Nov 2026; lesson text itself needs a P2E login). Educators approve these; the AI only picks names and workplaces, while goods and every amount come index-aligned from data/synthetic/locales so the sums always work. Each challenge gives every number it needs, 'recap' repeats the lesson facts it relies on (learners will not remember them), and 'help' is the step-by-step start shown when a learner says they are confused, and 'tools' are the course tools that fit this challenge. Pidgin text needs native-speaker review.",
+  "note": "SYNTHETIC PLACEHOLDER challenge templates, each tied to a lesson in the public P2E course lists (global.passport2earning.org, read 18 Nov 2026; lesson text itself needs a P2E login). Educators approve these; the AI only picks names and workplaces, while goods and every amount come index-aligned from data/synthetic/locales so the sums always work. Each challenge gives every number it needs, 'recap' repeats the lesson facts it relies on (learners will not remember them), and 'help' is the step-by-step start shown when a learner says they are confused, and 'tools' are the course tools that fit this challenge. Pidgin text needs native-speaker review. chal-001 is the BBS x GenU shared challenge (skillChallenge in data/shared/shared-mock-data.json): task wording unchanged.",
   "items": [
     {
       "id": "fl-rainy-sales",
@@ -295,6 +295,40 @@
       "help": {
         "en": "Start here: 1. Ask: do real employers ask for money to register? 2. Say how {name} can check if the job is real, using {employer}'s own official contacts. 3. Write the reply {name} would send, in quotes.",
         "pcm": "Start here: 1. Ask: real employer dey collect money to register? 2. Talk how {name} fit check if the work real, with {employer} correct contact. 3. Write the reply wey {name} go send, inside quote."
+      }
+    },
+    {
+      "id": "chal-001",
+      "courseId": "solar-pv",
+      "rubricId": "solar-rubric",
+      "text": {
+        "en": "A customer's solar light stopped charging. List three things you would check, in order.",
+        "pcm": "Customer solar light no dey charge again. List three things wey you go check, one after the other."
+      },
+      "lesson": "Solar PV Installation Basics (sample course): fault-finding when a system will not charge",
+      "recap": {
+        "en": "Fault-finding: check the simplest and most common causes first, then test one part at a time. A multimeter measures voltage: a panel in full sun should read close to the voltage on its label. Always switch off and disconnect before you touch wiring.",
+        "pcm": "To find fault: check the easy and common things first, then test one part at a time. Multimeter dey measure voltage: panel wey dey full sun suppose read near the voltage wey dey its label. Always off am and disconnect before you touch wire."
+      },
+      "help": {
+        "en": "Start here: 1. Name the parts: the panel, the cables and connections, the battery, the light. 2. Which one is quickest to check? Start there. 3. Write three checks, starting with First, Then and Finally, and say how you would test each one, for example with a multimeter.",
+        "pcm": "Start here: 1. Name the parts: the panel, the cable and connection, the battery, the light. 2. Which one quick pass to check? Start from there. 3. Write three checks, start with First, Then and Finally, and talk how you go test each one, like with multimeter."
+      },
+      "tools": {
+        "keywords": [
+          "multimeter",
+          "voltage",
+          "volt",
+          "output",
+          "measure",
+          "reading",
+          "fuse",
+          "charge controller"
+        ],
+        "named": {
+          "en": "testing the panel's output with a multimeter, checking the connections and fuse, or testing the battery",
+          "pcm": "to test the panel output with multimeter, to check the connection and fuse, or to test the battery"
+        }
       }
     }
   ]

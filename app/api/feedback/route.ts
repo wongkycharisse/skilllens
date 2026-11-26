@@ -4,6 +4,7 @@ import { examplesFor, rubricFor, templates } from "../../../lib/data";
 import { scoreSafely } from "../../../lib/pipeline";
 import { Lang, PreviousAttempt, SlotValues } from "../../../lib/schema";
 import { fillTemplate } from "../../../lib/template";
+import { registerPass } from "../../../lib/yoid";
 import { skillsFor } from "../../../lib/yoma/skills";
 
 const Body = z.object({
@@ -63,6 +64,8 @@ export async function POST(req: Request) {
       })),
       answer: outcome.answer,
       redacted: outcome.redacted,
+      // Level 2 only: a one-time id for the server-side pass record, so a YoID credential can't be claimed from the browser.
+      passId: previous ? registerPass(template.id, scores) : null,
       skills: skillsFor(template.rubricId),
     });
   });
