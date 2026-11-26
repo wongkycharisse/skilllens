@@ -79,8 +79,8 @@ All sample data is fictional and labelled on screen.
    - Yoma has no published component package, so SkillLens copies Yoma's tokens and mirrors its components.
    - PathFinder uses its own green palette, so the four prototypes do not yet share one look. Please confirm Yoma's tokens as the shared kit, or send the kit the others should use.
 7. **Repository access:**
-   - This repository is private. Give GenU reviewers access, or make it public.
-   - The public copy in Devin-Fitzpatrick06/yoma#1 is several updates behind.
+   - This repository is public (since 26 November 2026), so reviewers need no access.
+   - A copy is also in the `skilllens/` folder of Devin-Fitzpatrick06/yoma#1, updated 25 November 2026.
 8. **Safeguarding:** UNICEF child-safeguarding and data-protection sign-off before any real learner uses it.
 
 ## Known limitations

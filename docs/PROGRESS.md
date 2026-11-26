@@ -184,7 +184,7 @@ npm run dev
 
 Then open `http://localhost:3000/demo/p2e` in the browser's phone view. `npm run setup` picks real AI if Ollama is running, otherwise simulated mode. For real AI with no account: install [Ollama](https://ollama.com), run `ollama pull gemma3:4b` (3.3 GB), then `npm run setup`. Settings and sample data: [README](../README.md).
 
-**Launch from GitHub, checked 16 November 2026:** a fresh clone ran `npm ci`, `npm run setup` and `npm run check` with no other steps, and passed. The main repository is private, so reviewers need access or can use the public copy in the `skilllens/` folder of Devin-Fitzpatrick06/yoma#1.
+**Launch from GitHub, checked 16 November 2026:** a fresh clone ran `npm ci`, `npm run setup` and `npm run check` with no other steps, and passed. The repository was private then; it has been public since 26 November 2026.
 
 ## Development log
 
