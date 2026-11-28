@@ -20,6 +20,8 @@
   --color-ink: var(--yoma-black);
   --color-muted: var(--yoma-gray-dark); /* 7.2:1 on white, 6.6:1 on surface */
   --color-paper: var(--yoma-white);
+  /* Journey handoff button (journey contract v1): Yoma blue. White on it is 2.5:1, so its text is brand purple (5.5:1). */
+  --color-journey: var(--yoma-blue);
   /* Yoma's error pink is 3.3:1 on white, too light for text, so text uses a darker mix of the same token (7.9:1). */
   --color-coral: color-mix(in oklab, var(--yoma-pink) 62%, var(--yoma-black));
   --font-heading: var(--yoma-font-heading);
