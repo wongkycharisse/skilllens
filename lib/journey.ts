@@ -24,6 +24,17 @@ export const OWN = PHASES[PHASE_N - 1]; // Skill Credential
 export const LEAVING_TO = PHASES[PHASE_N]; // YoCV
 export const RECORDED_LINE = "✓ Recorded on your YoID (mock-up)";
 
+/**
+ * The plan's last row in the journey, worded as PathFinder shows it: PathFinder's Learning Plan ends with the weekly
+ * WhatsApp / SMS check-in, which the shared plan-001 (3 steps) does not list. Shown only with journey=demo.
+ */
+export const CHECK_IN = {
+  tag: "Check-in",
+  platform: "WhatsApp / SMS",
+  title: "Weekly check-in on WhatsApp or SMS",
+  why: "Every week PathFinder asks how each step is going, on WhatsApp or by SMS on a basic phone. After two missed check-ins, a facilitator steps in.",
+} as const;
+
 /** Shared course id → SkillLens course id. Only the plan step SkillLens tests. */
 export const COURSE_MAP: Record<string, string> = { "opp-course-001": "solar-pv" };
 /** Shared YoID → the SkillLens sample learner (Halima, yp-001). */

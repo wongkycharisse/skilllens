@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { courses } from "./data";
-import { DEFAULT_YOCV_URL, parseJourney, safeReturn, threadLabel, threadStates, yocvLink } from "./journey";
-import { learner } from "./shared";
+import { CHECK_IN, DEFAULT_YOCV_URL, parseJourney, safeReturn, threadLabel, threadStates, yocvLink } from "./journey";
+import { learner, plan } from "./shared";
 
 const LISTING = "http://localhost:3000/opportunities/c0a7e000-0000-4000-8000-000000000301";
 // Link 2 of the journey contract, as PathFinder builds it.
@@ -98,5 +98,13 @@ describe("journey contract v1: the YoID thread at phase 3", () => {
 
   it("labels the strip with the YoID", () => {
     expect(threadLabel("yoid-ng-7f3a0123")).toBe("YoID · yoid-ng-7f3a0123 · mock-up");
+  });
+});
+
+describe("journey contract v1: the Learning Plan card", () => {
+  it("adds PathFinder's weekly check-in as the 4th row, worded as PathFinder shows it", () => {
+    expect(plan.steps).toHaveLength(3);
+    expect(`${CHECK_IN.tag} · ${CHECK_IN.platform}`).toBe("Check-in · WhatsApp / SMS");
+    expect(CHECK_IN.title).toBe("Weekly check-in on WhatsApp or SMS");
   });
 });

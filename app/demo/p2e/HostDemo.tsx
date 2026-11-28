@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import coursesJson from "../../../data/synthetic/courses.json";
 import { Icon } from "../../../components/Icon";
 import { HandoffCard, JourneyThread } from "../../../components/Journey";
-import { ARRIVING, LEAVING_TO, OWN, PHASE_N, threadLabel, threadStates, type Journey } from "../../../lib/journey";
+import { ARRIVING, CHECK_IN, LEAVING_TO, OWN, PHASE_N, threadLabel, threadStates, type Journey } from "../../../lib/journey";
 import { challenge, learner, opportunity, partnerName, plan, SOLAR_COURSE } from "../../../lib/shared";
 import type { PracticeSample } from "../../../lib/schema";
 import type { HandoffRecord } from "../../../lib/yoid";
@@ -70,8 +70,11 @@ function ViewToggle({ view, onChange }: { view: View; onChange: (v: View) => voi
   );
 }
 
-/** The handoff item that arrives from PathFinder: Halima's Learning Plan, with this course as the current step. */
-function LearningPlan() {
+/**
+ * The handoff item that arrives from PathFinder: Halima's Learning Plan, with this course as the current step.
+ * In the journey it ends with PathFinder's weekly WhatsApp / SMS check-in, so it matches the plan PathFinder showed.
+ */
+function LearningPlan({ checkIn = false }: { checkIn?: boolean }) {
   return (
     <section aria-labelledby="plan" className="card-brand space-y-2 text-left">
       <p className="text-sm font-semibold text-brand">Learning Plan {plan.id} · from {plan.createdBy}</p>
@@ -87,6 +90,15 @@ function LearningPlan() {
             </li>
           );
         })}
+        {checkIn && (
+          <li className="flex items-start gap-2 rounded-xl p-2 text-sm">
+            <span className="grid size-6 shrink-0 place-items-center rounded-full bg-paper text-brand">{plan.steps.length + 1}</span>
+            <span>
+              <span className="text-xs font-semibold text-brand">{CHECK_IN.tag} · {CHECK_IN.platform}</span><br />
+              {CHECK_IN.title}<br /><span className="font-normal text-muted">{CHECK_IN.why}</span>
+            </span>
+          </li>
+        )}
       </ol>
     </section>
   );
@@ -231,7 +243,7 @@ export default function HostDemo({ journey, yocvHref }: Props) {
             <h1 className={`text-brand ${wide ? "text-5xl" : "text-3xl"}`}>Course complete</h1>
             <p className="chip inline-block">{course.title}{solar && ` · ${partnerName("org-p2e")}`}</p>
             <p>Well done, {learner.displayName.split(" ")[0]}! You finished all the lessons.</p>
-            {solar && <LearningPlan />}
+            {solar && <LearningPlan checkIn={!!journey} />}
           </div>
           <div className="space-y-4">
             <section className={`rounded-3xl bg-brand p-5 text-paper ${wide ? "p-8" : ""}`}>
