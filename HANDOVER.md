@@ -26,6 +26,7 @@ All sample data is fictional and labelled on screen.
 | Shared mock data | [`data/shared/shared-mock-data.json`](data/shared/shared-mock-data.json), v1.1, copied unchanged from Anaghataneja-stack/pathfinder-prototype, and read through [`lib/shared.ts`](lib/shared.ts) |
 | YoID thread (mocked) | [`lib/yoid.ts`](lib/yoid.ts), `GET /api/yoid`, `POST /api/yoid/credential` |
 | Design tokens | [`app/yoma-tokens.css`](app/yoma-tokens.css) (Yoma's values, copied from Yoma's web app) mapped in [`app/globals.css`](app/globals.css) |
+| Connected journey (Ziqi → PathFinder → SkillLens → YoCV) | `/demo/p2e?journey=demo&…`: [README.md](README.md) "Connected journey" and [INTEGRATION.md](INTEGRATION.md) section 9. Code: [`lib/journey.ts`](lib/journey.ts), [`components/Journey.tsx`](components/Journey.tsx). YoCV's address: `NEXT_PUBLIC_YOCV_URL`. |
 | Progress log | [docs/PROGRESS.md](docs/PROGRESS.md) |
 
 ## Secrets

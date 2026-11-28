@@ -214,3 +214,23 @@ SkillLens never issues the credential. It reports a pass, and Yoma's existing pi
 - Agree a manual revocation path, because Partner Sync does not revoke.
 
 **In the prototype:** with the shared sample learner (Halima), a pass on `chal-001` writes `cred-002` to a mocked YoID record (`lib/yoid.ts`, `POST /api/yoid/credential`), only with a signed one-time pass from the feedback route and after the learner's tap. Nothing reaches Yoma. Without a sample learner, the end screen is a design preview (`components/CredentialHandoff.tsx`). The full design is in the project's Claude Doc.
+
+## 9. The connected journey (journey contract v1)
+
+The four BBS x GenU prototypes link into one journey for Halima: Ziqi (Phase 1, Saved Opportunity) → PathFinder (Phase 2, Learning Plan) → SkillLens (Phase 3, Skill Credential) → YoCV (Phase 4, Job Application) → back to the Ziqi listing. Each link is a plain deep link that opens in the same tab. There is no shared store: each app works out the thread from its phase and the URL.
+
+**In:** PathFinder opens `/demo/p2e?journey=demo&from=pathfinder&yoid=…&listing=opp-job-001&goal=job&plan=plan-001&course=opp-course-001&return=…`.
+
+| Parameter | What SkillLens does with it |
+| --- | --- |
+| `journey=demo` | Turns journey mode on. Without it the page is exactly as before and the other parameters are ignored. |
+| `course` | `opp-course-001` opens `solar-pv`. Other ids keep the default course. |
+| `yoid` | `yoid-ng-7f3a0123` is the sample learner `yp-001` (Halima), passed to the embed as `learner=yp-001`. Another YoID gets no sample learner, so nothing is written to a YoID. |
+| `return` | "Back to the listing" in the header. Only `http:` and `https:` URLs; anything else is dropped and the link is hidden. |
+| `from`, `listing`, `goal`, `plan`, and any other | Passed on unchanged. |
+
+**On the page:** the arriving card (From PathFinder · Phase 2, **Learning Plan**), and the YoID strip `YoID · yoid-ng-7f3a0123 · mock-up` in place of the detailed thread card. The Skill Credential step is "in progress" until the embed posts `skilllens:yoid` with `cred-002` recorded; then it is "recorded", and the leaving card (Handing on to YoCV · Phase 4, **Skill Credential**) shows the **Continue to YoCV** button.
+
+**Out (link 3):** `NEXT_PUBLIC_YOCV_URL/?as=halima&journey=demo&from=skilllens&yoid=…&listing=…&goal=…&plan=…&course=…&credential=cred-002&return=…` (default `http://localhost:4174`).
+
+The embed itself (`/embed/skilllens`) and its messages are unchanged: the button lives on the host page, so a real P2E host that does not take part in the journey sees no change. The code is `lib/journey.ts` (parameters, mapping, the link; tested in `lib/journey.test.ts`), `components/Journey.tsx` (the card and the strip) and `app/demo/p2e/`.
