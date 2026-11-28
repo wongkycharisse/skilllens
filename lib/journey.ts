@@ -114,6 +114,13 @@ export function yocvLink(journey: Journey, base: string = yocvUrl()): string {
   return `${base.replace(/\/+$/, "")}/?${out.toString()}`;
 }
 
+/**
+ * The date on the Skill Credential card. The shared data's cred-002 has a fixed issuedOn (2026-12-20), which reads as
+ * a future date next to YoCV's "recorded" month. In the journey the card shows the day it is assessed and recorded on
+ * YoID: `today`, already formatted like the rest of SkillLens. Outside the journey the shared date is kept.
+ */
+export const credentialDate = (issuedOn: string | null | undefined, today: string, journey: boolean) => (journey ? today : issuedOn || today);
+
 export type StepState = "recorded" | "in progress" | "next";
 
 /** The YoID thread for the app at phase n: earlier steps recorded, its own in progress until done, later ones next. */

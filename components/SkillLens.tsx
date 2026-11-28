@@ -163,7 +163,7 @@ function NextSteps({ courseId, lang }: { courseId: string; lang: Lang }) {
   );
 }
 
-export function SkillLens({ courseId, courseTitle, initialLang, learner = null }: { courseId: string; courseTitle: Record<Lang, string>; initialLang: Lang; learner?: SampleLearner | null }) {
+export function SkillLens({ courseId, courseTitle, initialLang, learner = null, journey = false }: { courseId: string; courseTitle: Record<Lang, string>; initialLang: Lang; learner?: SampleLearner | null; journey?: boolean }) {
   const [lang, setLang] = useState<Lang>(initialLang);
   const [step, setStep] = useState<Step>("lang");
   const [level, setLevel] = useState<1 | 2>(1);
@@ -432,7 +432,7 @@ export function SkillLens({ courseId, courseTitle, initialLang, learner = null }
             <p role="status" className="card-brand flex gap-2 font-medium text-brand"><Icon name="check" />{t(lang, yoma === "sent" ? "sentYoma" : "sentYomaDemo")}</p>
           )}
           {feedback?.rubric && (
-            <CredentialHandoff lang={lang} rows={feedback.rubric} skills={saved.skills} lesson={challenge?.lesson ?? null} date={new Date(saved.savedAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })} sent={yoma === "sent" || yoma === "demo"} learner={learner} passId={feedback.passId ?? null} onRecorded={(thread) => window.parent.postMessage({ type: "skilllens:yoid", thread }, HOST_ORIGIN)} />
+            <CredentialHandoff lang={lang} rows={feedback.rubric} skills={saved.skills} lesson={challenge?.lesson ?? null} date={new Date(saved.savedAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })} sent={yoma === "sent" || yoma === "demo"} learner={learner} journey={journey} passId={feedback.passId ?? null} onRecorded={(thread) => window.parent.postMessage({ type: "skilllens:yoid", thread }, HOST_ORIGIN)} />
           )}
           <NextSteps courseId={courseId} lang={lang} />
           <button type="button" className="btn-secondary" onClick={startOver}><Icon name="retry" /> {t(lang, "tryAnother")}</button>

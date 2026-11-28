@@ -7,6 +7,7 @@ import { useState } from "react";
 import { PASS_LEVEL, passed } from "../lib/credential";
 import { t, type MessageKey } from "../lib/i18n";
 import type { Lang, YomaSkill } from "../lib/schema";
+import { credentialDate } from "../lib/journey";
 import { credential, shared, skillLabel } from "../lib/shared";
 import type { HandoffRecord, IssuedCredential } from "../lib/yoid";
 import type { RubricRow } from "./FeedbackPanels";
@@ -30,9 +31,11 @@ interface Props {
   learner: SampleLearner | null;
   passId: string | null;
   onRecorded: (thread: HandoffRecord[]) => void;
+  /** Opened from the connected journey (journey=demo): the card shows today's date, the day cred-002 is recorded. */
+  journey?: boolean;
 }
 
-export function CredentialHandoff({ lang, rows, skills, lesson, date, sent, learner, passId, onRecorded }: Props) {
+export function CredentialHandoff({ lang, rows, skills, lesson, date, sent, learner, passId, onRecorded, journey = false }: Props) {
   const [status, setStatus] = useState<"ready" | "sending" | "error">("ready");
   const [issued, setIssued] = useState<IssuedCredential | null>(null);
   const ok = passed(rows);
@@ -80,7 +83,7 @@ export function CredentialHandoff({ lang, rows, skills, lesson, date, sent, lear
                 <li key={s.id} className="rounded-full bg-paper px-3 py-1 text-sm font-semibold text-brand">{s.name}</li>
               ))}
             </ul>
-            <p className="mt-3 text-sm">{t(lang, "credAssessed")} · {card?.issuedOn ?? date}</p>
+            <p className="mt-3 text-sm">{t(lang, "credAssessed")} · {card ? credentialDate(card.issuedOn, date, journey) : date}</p>
             {card && <p className="mt-1 text-sm">{t(lang, "credIdLabel")} {card.id} · YoID {card.yoidId}</p>}
           </div>
 

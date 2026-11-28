@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { courses } from "./data";
-import { CHECK_IN, DEFAULT_YOCV_URL, JOURNEY_NAME, parseJourney, safeReturn, threadLabel, threadStates, yocvLink } from "./journey";
-import { learner, plan } from "./shared";
+import { CHECK_IN, credentialDate, DEFAULT_YOCV_URL, JOURNEY_NAME, parseJourney, safeReturn, threadLabel, threadStates, yocvLink } from "./journey";
+import { credential, learner, plan } from "./shared";
 
 const LISTING = "http://localhost:3000/opportunities/c0a7e000-0000-4000-8000-000000000301";
 // Link 2 of the journey contract, as PathFinder builds it.
@@ -113,5 +113,18 @@ describe("journey contract v1: the learner's name", () => {
   it("is Halima's full name, as the other prototypes show it, not the shared displayName", () => {
     expect(learner.displayName).toBe("Halima Y.");
     expect(JOURNEY_NAME).toBe("Halima Yusuf");
+  });
+});
+
+describe("journey contract v1: the Skill Credential's date", () => {
+  it("is the day it is recorded in the journey, not the shared data's future issuedOn", () => {
+    const issuedOn = credential("cred-002")?.issuedOn;
+    expect(issuedOn).toBe("2026-12-20");
+    expect(credentialDate(issuedOn, "28 Nov 2026", true)).toBe("28 Nov 2026");
+  });
+
+  it("keeps the shared date outside the journey", () => {
+    expect(credentialDate("2026-12-20", "28 Nov 2026", false)).toBe("2026-12-20");
+    expect(credentialDate(undefined, "28 Nov 2026", false)).toBe("28 Nov 2026");
   });
 });
