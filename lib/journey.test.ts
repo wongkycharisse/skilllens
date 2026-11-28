@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { courses } from "./data";
-import { CHECK_IN, DEFAULT_YOCV_URL, parseJourney, safeReturn, threadLabel, threadStates, yocvLink } from "./journey";
+import { CHECK_IN, DEFAULT_YOCV_URL, JOURNEY_NAME, parseJourney, safeReturn, threadLabel, threadStates, yocvLink } from "./journey";
 import { learner, plan } from "./shared";
 
 const LISTING = "http://localhost:3000/opportunities/c0a7e000-0000-4000-8000-000000000301";
@@ -106,5 +106,12 @@ describe("journey contract v1: the Learning Plan card", () => {
     expect(plan.steps).toHaveLength(3);
     expect(`${CHECK_IN.tag} · ${CHECK_IN.platform}`).toBe("Check-in · WhatsApp / SMS");
     expect(CHECK_IN.title).toBe("Weekly check-in on WhatsApp or SMS");
+  });
+});
+
+describe("journey contract v1: the learner's name", () => {
+  it("is Halima's full name, as the other prototypes show it, not the shared displayName", () => {
+    expect(learner.displayName).toBe("Halima Y.");
+    expect(JOURNEY_NAME).toBe("Halima Yusuf");
   });
 });

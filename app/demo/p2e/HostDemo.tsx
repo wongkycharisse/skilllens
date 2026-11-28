@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import coursesJson from "../../../data/synthetic/courses.json";
 import { Icon } from "../../../components/Icon";
 import { HandoffCard, JourneyThread } from "../../../components/Journey";
-import { ARRIVING, CHECK_IN, LEAVING_TO, OWN, PHASE_N, threadLabel, threadStates, type Journey } from "../../../lib/journey";
+import { ARRIVING, CHECK_IN, JOURNEY_NAME, LEAVING_TO, OWN, PHASE_N, threadLabel, threadStates, type Journey } from "../../../lib/journey";
 import { challenge, learner, opportunity, partnerName, plan, SOLAR_COURSE } from "../../../lib/shared";
 import type { PracticeSample } from "../../../lib/schema";
 import type { HandoffRecord } from "../../../lib/yoid";
@@ -208,7 +208,7 @@ export default function HostDemo({ journey, yocvHref }: Props) {
             <span className="icon-circle size-9"><Icon name="cap" className="size-5" /></span>
             <p className="font-heading text-xl font-extrabold">Courses on Yoma <span className="text-sm font-semibold text-paper/80">(mock-up)</span></p>
           </div>
-          <p className="rounded-full bg-paper/15 px-3 py-1 text-sm">{learner.displayName} · sample data</p>
+          <p className="rounded-full bg-paper/15 px-3 py-1 text-sm">{journey ? JOURNEY_NAME : learner.displayName} · sample data</p>
           {journey?.returnUrl && (
             <a href={journey.returnUrl} className="text-sm font-semibold underline">Back to the listing</a>
           )}
@@ -263,7 +263,7 @@ export default function HostDemo({ journey, yocvHref }: Props) {
           <iframe
             key={courseId}
             title="SkillLens level-up challenge"
-            src={`/embed/skilllens?course=${courseId}&lang=en${learnerParam ? `&learner=${learnerParam}` : ""}`}
+            src={`/embed/skilllens?course=${courseId}&lang=en${learnerParam ? `&learner=${learnerParam}` : ""}${journey ? "&journey=demo" : ""}`}
             className={`block w-full border-0 ${wide ? "demo-frame-wide lg:col-span-2" : "min-h-0 flex-1"}`}
           />
           {wide && <div className="space-y-4 py-4">{leaving}{threadCard}</div>}

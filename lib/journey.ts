@@ -35,6 +35,9 @@ export const CHECK_IN = {
   why: "Every week PathFinder asks how each step is going, on WhatsApp or by SMS on a basic phone. After two missed check-ins, a facilitator steps in.",
 } as const;
 
+/** The learner's full name, as the other three prototypes show it in the journey ("Halima Yusuf", not "Halima Y."). */
+export const JOURNEY_NAME = [learner.firstName, learner.lastName].filter(Boolean).join(" ") || learner.displayName;
+
 /** Shared course id → SkillLens course id. Only the plan step SkillLens tests. */
 export const COURSE_MAP: Record<string, string> = { "opp-course-001": "solar-pv" };
 /** Shared YoID → the SkillLens sample learner (Halima, yp-001). */
