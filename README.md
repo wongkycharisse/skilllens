@@ -43,7 +43,7 @@ Set `AI_PROVIDER=foundry` and the `FOUNDRY_*` variables, and `CONTENT_SAFETY_PRO
 ### Check everything
 
 ```bash
-npm run check       # lint, types, 99 unit and route tests, offline eval, production build (no model needed)
+npm run check       # lint, types, 112 unit and route tests, offline eval, production build (no model needed)
 npm run eval        # agreement and safety report with the model in .env.local
 npm run scenarios   # 20 realistic, edge-case and failure scenarios with the model in .env.local
 ```
@@ -73,6 +73,21 @@ Halima's story in the shared data: attempt 1 is "not yet" (the tip asks how she 
 Things to try:
 - Type a phone number or "my name is …" into an answer: it is removed before feedback.
 - Type "I want to end my life": the answer is not sent for feedback, the learner sees a supportive message, and the case appears in the facilitator view.
+
+### Connected journey (Ziqi → PathFinder → SkillLens → YoCV)
+
+Opened with `?journey=demo`, `/demo/p2e` is Phase 3 of the four-prototype journey (journey contract v1). PathFinder links here with:
+
+```
+/demo/p2e?journey=demo&from=pathfinder&yoid=yoid-ng-7f3a0123&listing=opp-job-001&goal=job&plan=plan-001&course=opp-course-001&return=<the Ziqi listing, URL-encoded>
+```
+
+- `course=opp-course-001` opens Solar PV Installation Basics, and `yoid=yoid-ng-7f3a0123` is Halima (`yp-001`).
+- At the top: the arriving card ("From PathFinder · Phase 2", **Learning Plan**) and the YoID thread `YoID · yoid-ng-7f3a0123 · mock-up` (Saved Opportunity and Learning Plan recorded, Skill Credential in progress, Job Application next).
+- "Back to the listing" in the header goes to `return` (only an `http:` or `https:` URL; otherwise the link is hidden).
+- Once `cred-002` is recorded, the leaving card "Handing on to YoCV · Phase 4" shows **Continue to YoCV**. It opens, in the same tab, `NEXT_PUBLIC_YOCV_URL/?as=halima&journey=demo&from=skilllens&yoid=…&listing=…&goal=…&plan=…&course=…&credential=cred-002&return=…`: every parameter received, plus `from` and `credential`.
+
+To try it locally next to the other prototypes, run SkillLens on port 3001 (`npm run dev -- -p 3001`). Without `journey=demo` the page is the same as before. Details: [INTEGRATION.md](INTEGRATION.md) section 9.
 
 **Facilitator view:** `/facilitator`, with any username and the `FACILITATOR_PASSWORD` from `.env.local`. It lists flagged cases (kept 72 hours, personal details removed) and the helpfulness ratings.
 
@@ -135,6 +150,7 @@ All are in `.env.example`. Never commit real keys: `.env.local` is git-ignored.
 | `FACILITATOR_PASSWORD` | | opening `/facilitator` (it stays closed until set) |
 | `PASS_SIGNING_SECRET` | random, from `npm run setup` | signs the one-time pass a Level 2 pass earns, so the mocked YoID write accepts only passes the server scored. Set it on any host with more than one server instance (Vercel). |
 | `NEXT_PUBLIC_P2E_ORIGIN` | same origin | the P2E origin allowed to embed SkillLens and receive saved samples |
+| `NEXT_PUBLIC_YOCV_URL` | `http://localhost:4174` | the connected journey: YoCV's address (`YOCV_URL` in the journey contract) for the "Continue to YoCV" button. Read at build time, like every `NEXT_PUBLIC_` setting. |
 | `YOMA_MODE` | `mock` | `live` sends to Yoma with the learner's own token |
 | `YOMA_API_BASE_URL` | Yoma stage | Yoma API base, ending in `/api/v3` |
 | `YOMA_OPPORTUNITY_IDS` | | live: `financial-literacy:<guid>,job-readiness:<guid>` |

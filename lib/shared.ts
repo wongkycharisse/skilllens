@@ -7,7 +7,7 @@ import json from "../data/shared/shared-mock-data.json";
 const Shared = z.object({
   meta: z.object({ version: z.string(), warning: z.string(), handoffs: z.record(z.string(), z.string()) }),
   skills: z.record(z.string(), z.string()),
-  youngPerson: z.object({ id: z.string(), yoidId: z.string(), displayName: z.string(), age: z.number(), languages: z.array(z.string()) }),
+  youngPerson: z.object({ id: z.string(), yoidId: z.string(), firstName: z.string().optional(), lastName: z.string().optional(), displayName: z.string(), age: z.number(), languages: z.array(z.string()) }),
   partners: z.array(z.object({ id: z.string(), name: z.string() })),
   opportunities: z.array(z.object({ id: z.string(), type: z.string(), title: z.string(), org: z.string() }).passthrough()),
   learningPlan: z.object({
